@@ -32,11 +32,27 @@
             android:layout_height="wrap_content">
         </EditText>
 
-        <LinearLayout
-            android:layout_marginTop="45px"
-            android:orientation="vertical"
+        <EditText
+            android:id="@+id/et_num_viaje"
+            android:layout_marginTop="20dp"
+            android:hint="Ingrese numero de viaje"
+            android:inputType="number"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
+        </EditText>
+
+        <LinearLayout
+            android:layout_marginTop="45px"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <Button
+                android:id="@+id/button_close_login"
+                android:drawableEnd="@drawable/ic_baseline_close_24"
+                android:layout_marginRight="10px"
+                android:layout_width="50dp"
+                android:layout_height="wrap_content">
+            </Button>
             <Button
                 android:id="@+id/button_login"
                 android:text="Login"

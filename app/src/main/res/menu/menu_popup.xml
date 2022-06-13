@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/item_gen_revisar_viaje"
+        android:title="Revisar Viaje" />
+
+    <item
+        android:id="@+id/item_gen_cargar_furgon"
+        android:title="Cargar Furgón" />
+
+    <item
+        android:id="@+id/item_gen_inicia_viaje"
+        android:title="Iniciar Viaje" />
+
+    <item
+        android:id="@+id/item_gen_entrega_pedido"
+        android:title="Entregar Pedido" />
+</menu>

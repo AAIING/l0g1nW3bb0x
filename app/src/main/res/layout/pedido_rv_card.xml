@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <LinearLayout
+        android:id="@+id/linear_rv_otes"
+        android:layout_marginTop="1dp"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <LinearLayout
+            android:padding="1dp"
+            android:layout_marginStart="5dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <TextView
+                android:id="@+id/view_numero_pedido"
+                android:padding="5dp"
+                android:layout_margin="5dp"
+                android:textSize="15dp"
+                android:textColor = "?android:textColorPrimary"
+                android:text="000000"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content">
+            </TextView>
+            <LinearLayout
+                android:layout_width="180dp"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/view_nombre_cliente"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:padding="5dp"
+                    android:text="nombre_cliente"
+                    android:textColor="?android:textColorPrimary"
+                    android:textSize="15dp"></TextView>
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/view_btn_ver_pedido"
+                android:layout_marginStart="25dp"
+                android:padding="5dp"
+                android:drawableStart="@drawable/ic_black_pdf_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+            </TextView>
+
+            <TextView
+                android:id="@+id/view_btn_escanear_pedido"
+                android:layout_marginStart="25dp"
+                android:padding="5dp"
+                android:drawableStart="@drawable/ic_baseline_document_scanner_24"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+            </TextView>
+        </LinearLayout>
+    </LinearLayout>
+</RelativeLayout>
