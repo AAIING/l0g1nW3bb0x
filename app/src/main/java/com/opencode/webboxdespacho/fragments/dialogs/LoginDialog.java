@@ -1,9 +1,11 @@
-package com.opencode.webboxdespacho.fragments;
+package com.opencode.webboxdespacho.fragments.dialogs;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 
+import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -18,6 +20,7 @@ import android.widget.Toast;
 import com.opencode.webboxdespacho.R;
 import com.opencode.webboxdespacho.config.ApiConf;
 import com.opencode.webboxdespacho.config.SessionDatos;
+import com.opencode.webboxdespacho.fragments.MenuFragment;
 import com.opencode.webboxdespacho.models.Despachosd;
 import com.opencode.webboxdespacho.models.Login;
 import com.opencode.webboxdespacho.sqlite.data.DespachosdData;
@@ -30,10 +33,10 @@ import retrofit2.Response;
 
 /**
  * A simple {@link Fragment} subclass.
- * Use the {@link LoginFragment#newInstance} factory method to
+ * Use the {@link LoginDialog#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class LoginFragment extends Fragment {
+public class LoginDialog extends DialogFragment {
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -44,7 +47,7 @@ public class LoginFragment extends Fragment {
     private String mParam1;
     private String mParam2;
 
-    public LoginFragment() {
+    public LoginDialog() {
         // Required empty public constructor
     }
 
@@ -57,8 +60,8 @@ public class LoginFragment extends Fragment {
      * @return A new instance of fragment LoginFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static LoginFragment newInstance(String param1, String param2) {
-        LoginFragment fragment = new LoginFragment();
+    public static LoginDialog newInstance(String param1, String param2) {
+        LoginDialog fragment = new LoginDialog();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
@@ -98,13 +101,15 @@ public class LoginFragment extends Fragment {
     private DespachosdData despachosdData;
     private AlertDialog alertDialog;
     private SessionDatos sessionDatos;
+    private ProgressDialog progressDialog;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_login, container, false);
-        //setCancelable(false);
+        setCancelable(false);
+        progressDialog = new ProgressDialog(getContext());
         sessionDatos = new SessionDatos(getContext());
         alertDialog = new AlertDialog.Builder(getContext()).create();
         despachosdData = new DespachosdData(getContext());
@@ -125,7 +130,7 @@ public class LoginFragment extends Fragment {
         @Override
         public void onClick(View v) {
             //
-            //dismiss();
+            dismiss();
         }
     };
 
@@ -138,6 +143,8 @@ public class LoginFragment extends Fragment {
                 String usuario = etUser.getText().toString();
                 String contrasena = etPassword.getText().toString();
                 if (!usuario.isEmpty() && !contrasena.isEmpty()) {
+                    progressDialog.show();
+                    progressDialog.setMessage("Sincronizando..");
                     login(usuario, contrasena);
                 } else {
                     Toast.makeText(getContext(), "Faltan parametro(s)", Toast.LENGTH_SHORT).show();
@@ -146,6 +153,8 @@ public class LoginFragment extends Fragment {
             }else{
                 String numviaje = etNumViaje.getText().toString();
                 if (!numviaje.isEmpty()) {
+                    progressDialog.show();
+                    progressDialog.setMessage("Cargando viaje..");
                     cargarViaje(Integer.parseInt(numviaje));
                 } else {
                     Toast.makeText(getContext(), "Faltan parametro(s)", Toast.LENGTH_SHORT).show();
@@ -168,15 +177,17 @@ public class LoginFragment extends Fragment {
                     etPassword.setVisibility(View.GONE);
                     etNumViaje.setVisibility(View.VISIBLE);
                     //
-
+                    progressDialog.dismiss();
                 }else{
+                    progressDialog.dismiss();
                     Toast.makeText(getContext(), "Error login..\ncompruebe usuario y/o contraseña", Toast.LENGTH_LONG).show();
                 }
             }
             @Override
             public void onFailure(Call<Login> call, Throwable t) {
                 Log.e("ERROR--->", t.toString());
-                Toast.makeText(getContext(), "Error login..\ncompruebe usuario y/o contraseña", Toast.LENGTH_LONG).show();
+                progressDialog.dismiss();
+                Toast.makeText(getContext(), "Error.. ", Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -199,15 +210,19 @@ public class LoginFragment extends Fragment {
                         alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Aceptar", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
+                                /*
                                 MenuFragment newFragment = new MenuFragment();
                                 FragmentTransaction fm = getActivity().getSupportFragmentManager().beginTransaction();
                                 fm.replace(R.id.main_activity_frame, newFragment);
                                 fm.commit();
+                                */
+                                dismiss();
                                 alertDialog.dismiss();
                             }
                         });
                         alertDialog.show();
-                        sessionDatos.setIsLoggedIn();
+                        //sessionDatos.setIsLoggedIn();
+                        progressDialog.dismiss();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -218,6 +233,7 @@ public class LoginFragment extends Fragment {
             }
             @Override
             public void onFailure(Call<List<Despachosd>> call, Throwable t) {
+                progressDialog.dismiss();
                 Log.e("ERROR--->", t.toString());
             }
         });

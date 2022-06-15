@@ -5,7 +5,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 
 import com.opencode.webboxdespacho.config.SessionDatos;
-import com.opencode.webboxdespacho.fragments.LoginFragment;
 import com.opencode.webboxdespacho.fragments.MenuFragment;
 
 public class MainActivity extends AppCompatActivity {
@@ -19,11 +18,11 @@ public class MainActivity extends AppCompatActivity {
         getSupportActionBar().hide();
 
         sessionDatos = new SessionDatos(MainActivity.this);
-
+        getSupportFragmentManager().beginTransaction().replace(R.id.main_activity_frame, new MenuFragment()).commit();
         //
+        /*
         if(sessionDatos.CheckSession())
-          getSupportFragmentManager().beginTransaction().replace(R.id.main_activity_frame, new MenuFragment()).commit();
-        else
           getSupportFragmentManager().beginTransaction().replace(R.id.main_activity_frame, new LoginFragment()).commit();
+        */
     }
 }

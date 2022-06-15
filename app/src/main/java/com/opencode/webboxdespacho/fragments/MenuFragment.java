@@ -16,6 +16,7 @@ import android.widget.Toast;
 
 import com.opencode.webboxdespacho.R;
 import com.opencode.webboxdespacho.fragments.dialogs.EscanearDialog;
+import com.opencode.webboxdespacho.fragments.dialogs.LoginDialog;
 import com.opencode.webboxdespacho.models.Despachosd;
 import com.opencode.webboxdespacho.sqlite.data.DespachosdData;
 
@@ -68,7 +69,7 @@ public class MenuFragment extends Fragment {
         }
     }
 
-    private Button btnRevisar, btnCargarFurgon, btnIniciarViaje;
+    private Button btnRevisar, btnCargarFurgon, btnIniciarViaje, btnSincronizaViaje;
     private AlertDialog alertDialog;
     private DespachosdData despachosdData;
     private List<Despachosd> listDespachosd;
@@ -85,14 +86,24 @@ public class MenuFragment extends Fragment {
         btnCargarFurgon.setOnClickListener(onClickCargarFurgon);
         btnIniciarViaje = view.findViewById(R.id.btn_iniciar_viaje);
         btnIniciarViaje.setOnClickListener(onClickIniciarViaje);
+        btnSincronizaViaje = view.findViewById(R.id.btn_sincroniza_pedido);
+        btnSincronizaViaje.setOnClickListener(onClickSincrViaje);
 
         return view;
     }
 
+    private View.OnClickListener onClickSincrViaje= new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            LoginDialog newFragment = new LoginDialog();
+            newFragment.setTargetFragment(MenuFragment.this, 1);
+            newFragment.show(getFragmentManager(), "EscanearDialog");
+        }
+    };
+
     private View.OnClickListener onClickIniciarViaje = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-
             int count_total = 0;
             int count_despacho = 0;
             //LA SUMA DE TODAS LAS CAJAS Y BOLSAS

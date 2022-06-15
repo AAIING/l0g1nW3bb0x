@@ -11,6 +11,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <Button
+            android:id="@+id/btn_sincroniza_pedido"
+            android:text="sincronizar viaje"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+        </Button>
+
+        <Button
             android:id="@+id/btn_opcion_revisar"
             android:text="revisar pedido"
             android:layout_width="match_parent"
@@ -46,6 +53,7 @@
         </Button>
 
         <Button
+            android:visibility="gone"
             android:id="@+id/btn_volver"
             android:text="Cerrar sesión"
             android:layout_width="match_parent"

@@ -48,7 +48,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
             <Button
-                android:visibility="gone"
                 android:id="@+id/button_close_login"
                 android:drawableEnd="@drawable/ic_baseline_close_24"
                 android:layout_marginRight="10px"
