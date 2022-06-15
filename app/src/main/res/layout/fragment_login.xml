@@ -33,6 +33,7 @@
         </EditText>
 
         <EditText
+            android:visibility="gone"
             android:id="@+id/et_num_viaje"
             android:layout_marginTop="20dp"
             android:hint="Ingrese numero de viaje"
@@ -47,6 +48,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
             <Button
+                android:visibility="gone"
                 android:id="@+id/button_close_login"
                 android:drawableEnd="@drawable/ic_baseline_close_24"
                 android:layout_marginRight="10px"

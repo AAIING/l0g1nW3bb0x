@@ -2,6 +2,7 @@ package com.opencode.webboxdespacho.fragments.adapters;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,7 +26,6 @@ public class DespachosdRecyclerAdapter extends RecyclerView.Adapter<DespachosdRe
 
     public interface OnClickListener {
         void onVerPedido(View view, int position);
-        void onEscanear(View view, int position);
     }
 
     public void setOnClickListener(OnClickListener onClickListener) {
@@ -60,13 +60,14 @@ public class DespachosdRecyclerAdapter extends RecyclerView.Adapter<DespachosdRe
             }
         });
 
-        holder.viewEscanear.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(onClickListener == null) return;
-                onClickListener.onEscanear(view, position);
-            }
-        });
+        //holder.viewCheckCargadas.setVisibility(View.GONE);
+        //holder.viewCheckEntregadas.setVisibility(View.GONE);
+
+        if(item.getCajas() == item.getCajascargadas()){
+            Drawable drawable = context.getResources().getDrawable(R.drawable.ic_baseline_green_check_24);
+            holder.viewCheckCargadas.setCompoundDrawablesWithIntrinsicBounds(drawable, null, null, null);
+        }
+
     }
 
     @Override
@@ -76,11 +77,13 @@ public class DespachosdRecyclerAdapter extends RecyclerView.Adapter<DespachosdRe
 
     public class ViewHolder extends RecyclerView.ViewHolder {
 
-        private TextView viewNumPedido, viewNombreCliente, viewVerPedido, viewEscanear;
+        private TextView viewNumPedido, viewNombreCliente, viewVerPedido, viewCheckCargadas, viewCheckEntregadas;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            viewEscanear = itemView.findViewById(R.id.view_btn_escanear_pedido);
+            //
+            viewCheckCargadas = itemView.findViewById(R.id.view_check_pedido_cargado);
+            viewCheckEntregadas = itemView.findViewById(R.id.view_check_pedido_entregado);
             viewNumPedido = itemView.findViewById(R.id.view_numero_pedido);
             viewNombreCliente = itemView.findViewById(R.id.view_nombre_cliente);
             viewVerPedido = itemView.findViewById(R.id.view_btn_ver_pedido);

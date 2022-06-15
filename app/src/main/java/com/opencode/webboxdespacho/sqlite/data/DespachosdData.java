@@ -20,6 +20,70 @@ public class DespachosdData {
         dbHelper = new DbHelperSql(context);
     }
 
+    public void updateCajaBolsaCount(String opt, String numpedido, String bolsa, String caja) throws Exception{
+        //
+        db = dbHelper.getWritableDatabase();
+        try{
+            //
+            String query = "";
+            //
+            if(opt.equals("1")) {
+                query = "UPDATE DESPACHOSD SET " +
+                        "CAJASCARGADAS = ?, " +
+                        "BOLSASCARGADAS = ? " +
+                        "WHERE PEDIDO = ?;";
+
+            }else if(opt.equals("2")){
+                query = "UPDATE DESPACHOSD SET " +
+                        "CAJASENTREGADAS = ?, " +
+                        "BOLSASENTREGADAS = ? " +
+                        "WHERE PEDIDO = ?;";
+            }
+            db.execSQL(
+                    query,
+                    new Object[] {
+                            caja,
+                            bolsa,
+                            numpedido
+                    });
+            dbHelper.close();
+        }catch (Exception e){
+            dbHelper.close();
+            throw new Exception(e.getMessage());
+        }
+    }
+
+
+    public Despachosd getDespachod(String npedido) throws Exception{
+        //Pedidos pedidos = new Pedidos();
+        Despachosd despd = new Despachosd();
+        db = dbHelper.getWritableDatabase();
+        try{
+            String query = "SELECT * FROM DESPACHOSD WHERE PEDIDO=?";
+            String[] selectionsArgs = new String[]{npedido};
+            Cursor cursor = db.rawQuery(query, selectionsArgs);
+            if(cursor.moveToFirst()) {
+                while (!cursor.isAfterLast()) {
+                    despd.setCajas((short) cursor.getInt(cursor.getColumnIndexOrThrow("CAJAS")));
+                    despd.setBolsas((short) cursor.getInt(cursor.getColumnIndexOrThrow("BOLSAS")));
+                    despd.setCajascargadas(cursor.getInt(cursor.getColumnIndexOrThrow("CAJASCARGADAS")));
+                    despd.setBolsascargadas(cursor.getInt(cursor.getColumnIndexOrThrow("BOLSASCARGADAS")));
+                    despd.setCajasentregadas(cursor.getInt(cursor.getColumnIndexOrThrow("CAJASENTREGADAS")));
+                    despd.setBolsasentregadas(cursor.getInt(cursor.getColumnIndexOrThrow("BOLSASENTREGADAS")));
+                    cursor.moveToNext();
+                }
+            }
+            cursor.close();
+            dbHelper.close();
+        } catch (Exception e){
+            dbHelper.close();
+            throw new Exception(e.getMessage());
+        }
+
+        return despd;
+    }
+
+
     public List<Despachosd> getDespachos() throws Exception{
         db = dbHelper.getWritableDatabase();
         List<Despachosd> list = new ArrayList<Despachosd>();

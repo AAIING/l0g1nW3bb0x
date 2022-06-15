@@ -14,11 +14,11 @@
         android:orientation="vertical">
 
         <TextView
-            android:id="@+id/et_user"
+            android:id="@+id/view_num_pedido_escan"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="N° Pedido: 0000"
-            android:textColor="@color/black"
+            android:textColor="?android:textColorPrimary"
             android:textSize="20dp"
             android:textStyle="bold">
         </TextView>
@@ -30,6 +30,15 @@
             android:orientation="vertical">
 
             <TextView
+                android:id="@+id/view_num_cajas"
+                android:layout_width="150dp"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_marginTop="20dp"
+                android:hint="CAJAS: X DE Y"
+                android:textStyle="bold"></TextView>
+
+            <TextView
                 android:id="@+id/view_num_bolsas"
                 android:layout_width="150dp"
                 android:layout_height="wrap_content"
@@ -38,14 +47,6 @@
                 android:hint="BOLSAS: X DE Y"
                 android:textStyle="bold"></TextView>
 
-            <TextView
-                android:id="@+id/view_num_cajas"
-                android:layout_width="150dp"
-                android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
-                android:layout_marginTop="20dp"
-                android:hint="CAJAS: X DE Y"
-                android:textStyle="bold"></TextView>
         </LinearLayout>
 
         <LinearLayout

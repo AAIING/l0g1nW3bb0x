@@ -1,11 +1,9 @@
-package com.opencode.webboxdespacho.fragments.dialogs;
+package com.opencode.webboxdespacho.fragments;
 
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 
-import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -19,7 +17,7 @@ import android.widget.Toast;
 
 import com.opencode.webboxdespacho.R;
 import com.opencode.webboxdespacho.config.ApiConf;
-import com.opencode.webboxdespacho.fragments.MenuFragment;
+import com.opencode.webboxdespacho.config.SessionDatos;
 import com.opencode.webboxdespacho.models.Despachosd;
 import com.opencode.webboxdespacho.models.Login;
 import com.opencode.webboxdespacho.sqlite.data.DespachosdData;
@@ -32,10 +30,10 @@ import retrofit2.Response;
 
 /**
  * A simple {@link Fragment} subclass.
- * Use the {@link LoginDialog#newInstance} factory method to
+ * Use the {@link LoginFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class LoginDialog extends DialogFragment {
+public class LoginFragment extends Fragment {
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -46,7 +44,7 @@ public class LoginDialog extends DialogFragment {
     private String mParam1;
     private String mParam2;
 
-    public LoginDialog() {
+    public LoginFragment() {
         // Required empty public constructor
     }
 
@@ -59,8 +57,8 @@ public class LoginDialog extends DialogFragment {
      * @return A new instance of fragment LoginFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static LoginDialog newInstance(String param1, String param2) {
-        LoginDialog fragment = new LoginDialog();
+    public static LoginFragment newInstance(String param1, String param2) {
+        LoginFragment fragment = new LoginFragment();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
@@ -77,12 +75,11 @@ public class LoginDialog extends DialogFragment {
         }
     }
 
-    private static final String TAG = "LoginDialog";
-
+    //private static final String TAG = "LoginDialog";
+/*
     public interface OnInputSelected {
         void rspta(boolean value);
     }
-
     public OnInputSelected mOnInputSelected;
     //
     @Override
@@ -94,19 +91,21 @@ public class LoginDialog extends DialogFragment {
             Log.e(TAG, "onAttach: ClassCastException : " + e.getMessage() );
         }
     }
-
+*/
     private EditText etUser, etPassword, etNumViaje;
     private Button btnLogin, btnCerrarLogin;
     private boolean isLogin =false;
     private DespachosdData despachosdData;
     private AlertDialog alertDialog;
+    private SessionDatos sessionDatos;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_login, container, false);
-        setCancelable(false);
+        //setCancelable(false);
+        sessionDatos = new SessionDatos(getContext());
         alertDialog = new AlertDialog.Builder(getContext()).create();
         despachosdData = new DespachosdData(getContext());
         etUser = view.findViewById(R.id.et_user);
@@ -119,7 +118,6 @@ public class LoginDialog extends DialogFragment {
         etNumViaje.setVisibility(View.GONE);
         btnCerrarLogin = view.findViewById(R.id.button_close_login);
         btnCerrarLogin.setOnClickListener(onClickCerrarLogin);
-
         return view;
     }
 
@@ -127,7 +125,7 @@ public class LoginDialog extends DialogFragment {
         @Override
         public void onClick(View v) {
             //
-            dismiss();
+            //dismiss();
         }
     };
 
@@ -136,13 +134,15 @@ public class LoginDialog extends DialogFragment {
         public void onClick(View v) {
             //
             if(!isLogin) {
+
                 String usuario = etUser.getText().toString();
                 String contrasena = etPassword.getText().toString();
                 if (!usuario.isEmpty() && !contrasena.isEmpty()) {
                     login(usuario, contrasena);
                 } else {
-                   Toast.makeText(getContext(), "Faltan parametro(s)", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Faltan parametro(s)", Toast.LENGTH_SHORT).show();
                 }
+
             }else{
                 String numviaje = etNumViaje.getText().toString();
                 if (!numviaje.isEmpty()) {
@@ -168,12 +168,7 @@ public class LoginDialog extends DialogFragment {
                     etPassword.setVisibility(View.GONE);
                     etNumViaje.setVisibility(View.VISIBLE);
                     //
-                    /*
-                    MenuFragment newFragment = new MenuFragment();
-                    FragmentTransaction fm = getActivity().getSupportFragmentManager().beginTransaction();
-                    fm.replace(R.id.main_activity_frame, newFragment);
-                    fm.commit();
-                    */
+
                 }else{
                     Toast.makeText(getContext(), "Error login..\ncompruebe usuario y/o contraseña", Toast.LENGTH_LONG).show();
                 }
@@ -204,13 +199,15 @@ public class LoginDialog extends DialogFragment {
                         alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Aceptar", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                mOnInputSelected.rspta(isLogin);
+                                MenuFragment newFragment = new MenuFragment();
+                                FragmentTransaction fm = getActivity().getSupportFragmentManager().beginTransaction();
+                                fm.replace(R.id.main_activity_frame, newFragment);
+                                fm.commit();
                                 alertDialog.dismiss();
-                                dismiss();
                             }
                         });
-
                         alertDialog.show();
+                        sessionDatos.setIsLoggedIn();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }

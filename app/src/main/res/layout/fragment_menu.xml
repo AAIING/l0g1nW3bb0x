@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".fragments.MenuFragment">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <Button
+            android:id="@+id/btn_opcion_revisar"
+            android:text="revisar pedido"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+        </Button>
+
+        <Button
+            android:id="@+id/btn_opcion_cargar_furgon"
+            android:text="cargar furgón"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+        </Button>
+
+        <Button
+            android:id="@+id/btn_iniciar_viaje"
+            android:text="iniciar viaje"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+        </Button>
+
+        <Button
+            android:id="@+id/btn_opcion2"
+            android:text="entregar pedido"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+        </Button>
+
+        <Button
+            android:id="@+id/btn_correcciones"
+            android:text="finalizar viaje"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+        </Button>
+
+        <Button
+            android:id="@+id/btn_volver"
+            android:text="Cerrar sesión"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+        </Button>
+    </LinearLayout>
+</FrameLayout>

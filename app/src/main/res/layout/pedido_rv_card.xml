@@ -3,60 +3,69 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto">
-    <LinearLayout
-        android:id="@+id/linear_rv_otes"
-        android:layout_marginTop="1dp"
-        android:orientation="vertical"
+
+    <TableLayout
+        android:id="@+id/table_titulo_col_det"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
-        <LinearLayout
-            android:padding="1dp"
-            android:layout_marginStart="5dp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+        <!-- Table Head -->
+        <TableRow
+            android:padding="5dp">
+
             <TextView
                 android:id="@+id/view_numero_pedido"
-                android:padding="5dp"
-                android:layout_margin="5dp"
-                android:textSize="15dp"
-                android:textColor = "?android:textColorPrimary"
-                android:text="000000"
-                android:layout_width="80dp"
-                android:layout_height="wrap_content">
-            </TextView>
-            <LinearLayout
-                android:layout_width="180dp"
-                android:layout_height="wrap_content">
-
-                <TextView
-                    android:id="@+id/view_nombre_cliente"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="5dp"
-                    android:padding="5dp"
-                    android:text="nombre_cliente"
-                    android:textColor="?android:textColorPrimary"
-                    android:textSize="15dp"></TextView>
-
-            </LinearLayout>
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="left"
+                android:padding="3dp"
+                android:text="0000"
+                android:textColor="?android:textColorPrimary" />
 
             <TextView
-                android:id="@+id/view_btn_ver_pedido"
-                android:layout_marginStart="25dp"
-                android:padding="5dp"
+                android:id="@+id/view_nombre_cliente"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="3"
+                android:gravity="left"
+                android:padding="3dp"
+                android:text="Cliente"
+                android:textColor="?android:textColorPrimary" />
+
+            <TextView
                 android:drawableStart="@drawable/ic_black_pdf_view"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
-            </TextView>
+                android:id="@+id/view_btn_ver_pedido"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:padding="3dp"
+                android:textColor="?android:textColorPrimary" />
 
             <TextView
-                android:id="@+id/view_btn_escanear_pedido"
-                android:layout_marginStart="25dp"
-                android:padding="5dp"
-                android:drawableStart="@drawable/ic_baseline_document_scanner_24"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
-            </TextView>
-        </LinearLayout>
-    </LinearLayout>
+                android:id="@+id/view_check_pedido_cargado"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:padding="3dp"
+                android:drawableEnd="@drawable/ic_baseline_circle_gray_24"
+                android:textColor="?android:textColorPrimary" />
+
+            <TextView
+                android:id="@+id/view_check_pedido_entregado"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:padding="3dp"
+                android:drawableEnd="@drawable/ic_baseline_circle_gray_24"
+                android:textColor="?android:textColorPrimary" />
+
+        </TableRow>
+        <!--End Table Head -->
+
+    </TableLayout>
+
+
 </RelativeLayout>
