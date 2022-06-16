@@ -7,17 +7,26 @@
     tools:context=".fragments.MenuFragment">
 
     <LinearLayout
+        android:gravity="center"
         android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent">
         <Button
+            android:padding="15dp"
             android:id="@+id/btn_sincroniza_pedido"
             android:text="sincronizar viaje"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
         </Button>
 
+        <LinearLayout
+            android:id="@+id/linear_viaje_sync"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
         <Button
+            android:padding="15dp"
             android:id="@+id/btn_opcion_revisar"
             android:text="revisar pedido"
             android:layout_width="match_parent"
@@ -25,6 +34,7 @@
         </Button>
 
         <Button
+            android:padding="15dp"
             android:id="@+id/btn_opcion_cargar_furgon"
             android:text="cargar furgón"
             android:layout_width="match_parent"
@@ -32,6 +42,7 @@
         </Button>
 
         <Button
+            android:padding="15dp"
             android:id="@+id/btn_iniciar_viaje"
             android:text="iniciar viaje"
             android:layout_width="match_parent"
@@ -39,14 +50,16 @@
         </Button>
 
         <Button
-            android:id="@+id/btn_opcion2"
+            android:padding="15dp"
+            android:id="@+id/btn_entrega_pedido"
             android:text="entregar pedido"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
         </Button>
 
         <Button
-            android:id="@+id/btn_correcciones"
+            android:padding="15dp"
+            android:id="@+id/btn_finalizar_viaje"
             android:text="finalizar viaje"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
@@ -59,5 +72,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
         </Button>
+        </LinearLayout>
     </LinearLayout>
 </FrameLayout>

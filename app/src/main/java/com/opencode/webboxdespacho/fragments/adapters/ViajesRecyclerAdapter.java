@@ -12,15 +12,16 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.opencode.webboxdespacho.R;
-import com.opencode.webboxdespacho.models.Despachosd;
+import com.opencode.webboxdespacho.models.Viajes;
+import com.opencode.webboxdespacho.models.Viajesd;
 import com.opencode.webboxdespacho.models.Pedidos;
 
 import java.util.List;
 
-public class DespachosdRecyclerAdapter extends RecyclerView.Adapter<DespachosdRecyclerAdapter.ViewHolder>{
+public class ViajesRecyclerAdapter extends RecyclerView.Adapter<ViajesRecyclerAdapter.ViewHolder>{
 
     private Context context;
-    private List<Despachosd> listPedidos;
+    private List<Viajes> listViajes;
 
     private OnClickListener onClickListener = null;
 
@@ -32,21 +33,22 @@ public class DespachosdRecyclerAdapter extends RecyclerView.Adapter<DespachosdRe
         this.onClickListener = onClickListener;
     }
 
-    public DespachosdRecyclerAdapter(Context context, List<Despachosd> listPedidos) {
+    public ViajesRecyclerAdapter(Context context, List<Viajes> listViajes) {
         this.context = context;
-        this.listPedidos = listPedidos;
+        this.listViajes = listViajes;
     }
 
     @NonNull
     @Override
-    public DespachosdRecyclerAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public ViajesRecyclerAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.pedido_rv_card, parent, false);
-        return new DespachosdRecyclerAdapter.ViewHolder(view);
+        return new ViajesRecyclerAdapter.ViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull DespachosdRecyclerAdapter.ViewHolder holder, @SuppressLint("RecyclerView") int position) {
-        Despachosd item = listPedidos.get(holder.getAdapterPosition());
+    public void onBindViewHolder(@NonNull ViajesRecyclerAdapter.ViewHolder holder, @SuppressLint("RecyclerView") int position) {
+        Viajes item2 = listViajes.get(holder.getAdapterPosition());
+        Viajesd item = item2.getViajesd();
         Pedidos pedidos = item.getPedidos();
 
         holder.viewNumPedido.setText(String.valueOf(item.getPedido()));
@@ -60,9 +62,6 @@ public class DespachosdRecyclerAdapter extends RecyclerView.Adapter<DespachosdRe
             }
         });
 
-        //holder.viewCheckCargadas.setVisibility(View.GONE);
-        //holder.viewCheckEntregadas.setVisibility(View.GONE);
-
         if(item.getCajas() == item.getCajascargadas()){
             Drawable drawable = context.getResources().getDrawable(R.drawable.ic_baseline_green_check_24);
             holder.viewCheckCargadas.setCompoundDrawablesWithIntrinsicBounds(drawable, null, null, null);
@@ -72,7 +71,7 @@ public class DespachosdRecyclerAdapter extends RecyclerView.Adapter<DespachosdRe
 
     @Override
     public int getItemCount() {
-        return listPedidos.size();
+        return listViajes.size();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
@@ -81,7 +80,6 @@ public class DespachosdRecyclerAdapter extends RecyclerView.Adapter<DespachosdRe
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            //
             viewCheckCargadas = itemView.findViewById(R.id.view_check_pedido_cargado);
             viewCheckEntregadas = itemView.findViewById(R.id.view_check_pedido_entregado);
             viewNumPedido = itemView.findViewById(R.id.view_numero_pedido);

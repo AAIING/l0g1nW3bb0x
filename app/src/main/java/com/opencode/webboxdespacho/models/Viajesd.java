@@ -3,7 +3,7 @@ package com.opencode.webboxdespacho.models;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class Despachosd {
+public class Viajesd {
 
     @SerializedName("Nroviaje")
     public int Nroviaje ;

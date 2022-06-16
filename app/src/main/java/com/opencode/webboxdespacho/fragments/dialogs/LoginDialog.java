@@ -2,12 +2,12 @@ package com.opencode.webboxdespacho.fragments.dialogs;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
 
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -20,10 +20,10 @@ import android.widget.Toast;
 import com.opencode.webboxdespacho.R;
 import com.opencode.webboxdespacho.config.ApiConf;
 import com.opencode.webboxdespacho.config.SessionDatos;
-import com.opencode.webboxdespacho.fragments.MenuFragment;
-import com.opencode.webboxdespacho.models.Despachosd;
+import com.opencode.webboxdespacho.models.Viajes;
+import com.opencode.webboxdespacho.models.Viajesd;
 import com.opencode.webboxdespacho.models.Login;
-import com.opencode.webboxdespacho.sqlite.data.DespachosdData;
+import com.opencode.webboxdespacho.sqlite.data.ViajesData;
 
 import java.util.List;
 
@@ -78,30 +78,30 @@ public class LoginDialog extends DialogFragment {
         }
     }
 
-    //private static final String TAG = "LoginDialog";
-/*
     public interface OnInputSelected {
-        void rspta(boolean value);
+        void rspta(boolean value, String opt, int numviaje);
     }
+
     public OnInputSelected mOnInputSelected;
-    //
+
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
         try{
             mOnInputSelected = (OnInputSelected) getTargetFragment();
         }catch (ClassCastException e){
-            Log.e(TAG, "onAttach: ClassCastException : " + e.getMessage() );
+            Log.e("LoginDialog", "onAttach: ClassCastException : " + e.getMessage() );
         }
     }
-*/
+
     private EditText etUser, etPassword, etNumViaje;
     private Button btnLogin, btnCerrarLogin;
     private boolean isLogin =false;
-    private DespachosdData despachosdData;
+    private ViajesData viajesData;
     private AlertDialog alertDialog;
     private SessionDatos sessionDatos;
     private ProgressDialog progressDialog;
+    private String opt="1";
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -112,7 +112,7 @@ public class LoginDialog extends DialogFragment {
         progressDialog = new ProgressDialog(getContext());
         sessionDatos = new SessionDatos(getContext());
         alertDialog = new AlertDialog.Builder(getContext()).create();
-        despachosdData = new DespachosdData(getContext());
+        viajesData = new ViajesData(getContext());
         etUser = view.findViewById(R.id.et_user);
         etUser.setText("");
         etPassword = view.findViewById(R.id.et_passwd);
@@ -123,13 +123,15 @@ public class LoginDialog extends DialogFragment {
         etNumViaje.setVisibility(View.GONE);
         btnCerrarLogin = view.findViewById(R.id.button_close_login);
         btnCerrarLogin.setOnClickListener(onClickCerrarLogin);
+        if(getArguments() != null){
+            opt = getArguments().getString("OPT");
+        }
         return view;
     }
 
     private  View.OnClickListener onClickCerrarLogin = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            //
             dismiss();
         }
     };
@@ -138,8 +140,30 @@ public class LoginDialog extends DialogFragment {
         @Override
         public void onClick(View v) {
             //
-            if(!isLogin) {
+            if(opt.equals("1")) {
+                if (!isLogin) {
+                    String usuario = etUser.getText().toString();
+                    String contrasena = etPassword.getText().toString();
+                    if (!usuario.isEmpty() && !contrasena.isEmpty()) {
+                        progressDialog.show();
+                        progressDialog.setMessage("Sincronizando..");
+                        login(usuario, contrasena);
+                    } else {
+                        Toast.makeText(getContext(), "Faltan parametro(s)", Toast.LENGTH_SHORT).show();
+                    }
 
+                } else {
+                    String numviaje = etNumViaje.getText().toString();
+                    if (!numviaje.isEmpty()) {
+                        progressDialog.show();
+                        progressDialog.setMessage("Cargando viaje..");
+                        cargarViaje(Integer.parseInt(numviaje));
+                    } else {
+                        Toast.makeText(getContext(), "Faltan parametro(s)", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+            }else{
                 String usuario = etUser.getText().toString();
                 String contrasena = etPassword.getText().toString();
                 if (!usuario.isEmpty() && !contrasena.isEmpty()) {
@@ -149,34 +173,28 @@ public class LoginDialog extends DialogFragment {
                 } else {
                     Toast.makeText(getContext(), "Faltan parametro(s)", Toast.LENGTH_SHORT).show();
                 }
-
-            }else{
-                String numviaje = etNumViaje.getText().toString();
-                if (!numviaje.isEmpty()) {
-                    progressDialog.show();
-                    progressDialog.setMessage("Cargando viaje..");
-                    cargarViaje(Integer.parseInt(numviaje));
-                } else {
-                    Toast.makeText(getContext(), "Faltan parametro(s)", Toast.LENGTH_SHORT).show();
-                }
             }
         }
     };
 
     /***/
-    void login(String usr, String contrasena) {
+    void login(String usr, String contrasena){
         Call<Login> call = ApiConf.getData().getLogin(usr, contrasena, 0);
-        call.enqueue(new Callback<Login>() {
+        call.enqueue(new Callback<Login>(){
             @Override
             public void onResponse(Call<Login> call, Response<Login> response) {
                 if(response.isSuccessful()){
                     Login login = response.body();
                     isLogin = true;
-                    btnLogin.setText("Cargar Viaje");
-                    etUser.setVisibility(View.GONE);
-                    etPassword.setVisibility(View.GONE);
-                    etNumViaje.setVisibility(View.VISIBLE);
-                    //
+                    if(opt.equals("1")) {
+                        btnLogin.setText("Cargar Viaje");
+                        etUser.setVisibility(View.GONE);
+                        etPassword.setVisibility(View.GONE);
+                        etNumViaje.setVisibility(View.VISIBLE);
+                    }else{
+                        dismiss();
+                        //mOnInputSelected.rspta(isLogin, opt, 0);
+                    }
                     progressDialog.dismiss();
                 }else{
                     progressDialog.dismiss();
@@ -193,17 +211,16 @@ public class LoginDialog extends DialogFragment {
     }
 
     void cargarViaje(int numviaje){
-        //
-        Call<List<Despachosd>> call = ApiConf.getData().getViajes(numviaje);
-        call.enqueue(new Callback<List<Despachosd>>() {
+        Call<List<Viajes>> call = ApiConf.getData().getViajes(numviaje);
+        call.enqueue(new Callback<List<Viajes>>() {
             @Override
-            public void onResponse(Call<List<Despachosd>> call, Response<List<Despachosd>> response) {
+            public void onResponse(Call<List<Viajes>> call, Response<List<Viajes>> response) {
                 //
                 if(response.isSuccessful()){
-                    List<Despachosd> respta = response.body();
+                    List<Viajes> respta = response.body();
                     try {
-                        despachosdData.borrarPedidos();
-                        despachosdData.insertPedidos(respta);
+                        viajesData.borrarPedidos();
+                        viajesData.insertPedidos(respta);
                         alertDialog.setCanceledOnTouchOutside(false);
                         alertDialog.setTitle("Cargar Viaje");
                         alertDialog.setMessage("Los pedidos han sido cargados..");
@@ -216,6 +233,7 @@ public class LoginDialog extends DialogFragment {
                                 fm.replace(R.id.main_activity_frame, newFragment);
                                 fm.commit();
                                 */
+                                mOnInputSelected.rspta(isLogin,opt,numviaje);
                                 dismiss();
                                 alertDialog.dismiss();
                             }
@@ -226,13 +244,13 @@ public class LoginDialog extends DialogFragment {
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-
                 }else{
+                    progressDialog.dismiss();
                     Toast.makeText(getContext(),"NUMERO DE VIAJE NO EXISTE", Toast.LENGTH_LONG).show();
                 }
             }
             @Override
-            public void onFailure(Call<List<Despachosd>> call, Throwable t) {
+            public void onFailure(Call<List<Viajes>> call, Throwable t) {
                 progressDialog.dismiss();
                 Log.e("ERROR--->", t.toString());
             }

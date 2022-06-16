@@ -1,14 +1,8 @@
 package com.opencode.webboxdespacho.fragments.dialogs;
 
-import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 
@@ -19,18 +13,14 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.zxing.integration.android.IntentIntegrator;
 import com.journeyapps.barcodescanner.ScanContract;
 import com.journeyapps.barcodescanner.ScanOptions;
 import com.opencode.webboxdespacho.R;
 import com.opencode.webboxdespacho.config.Capture;
-import com.opencode.webboxdespacho.models.Despachosd;
-import com.opencode.webboxdespacho.models.Pedidos;
-import com.opencode.webboxdespacho.sqlite.data.DespachosdData;
+import com.opencode.webboxdespacho.models.Viajesd;
+import com.opencode.webboxdespacho.sqlite.data.ViajesData;
 
-import java.util.Date;
 import java.util.List;
-import java.util.regex.Pattern;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -83,8 +73,9 @@ public class EscanearDialog extends DialogFragment {
     private TextView viewBolsas, viewCajas, viewNumPedido;
     private Button btnEscan, btnClose;
     private ScanOptions options;
-    private DespachosdData despachosdData;
-    private List<Despachosd> listDespachosd;
+    private ViajesData viajesData;
+    private List<Viajesd> listDespachosd;
+    private String opt = "1";
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -92,7 +83,7 @@ public class EscanearDialog extends DialogFragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_escanear_dialog, container, false);
         setCancelable(false);
-        despachosdData = new DespachosdData(getContext());
+        viajesData = new ViajesData(getContext());
         btnClose = view.findViewById(R.id.button_close_escan);
         btnClose.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -105,6 +96,10 @@ public class EscanearDialog extends DialogFragment {
         viewBolsas = view.findViewById(R.id.view_num_bolsas);
         viewCajas = view.findViewById(R.id.view_num_cajas);
         viewNumPedido = view.findViewById(R.id.view_num_pedido_escan);
+
+        if(getArguments() != null){
+            opt = getArguments().getString("OPT");
+        }
 
         return view;
     }
@@ -142,7 +137,7 @@ public class EscanearDialog extends DialogFragment {
                     String tipoenv = parts[1];
 
                     try {
-                        Despachosd despd = despachosdData.getDespachod(npedido);
+                        Viajesd despd = viajesData.getDespachod(npedido);
 
                         if(despd.getCajas() == despd.getCajascargadas() && despd.getBolsas() == despd.getBolsascargadas()){
                             //Toast.makeText(getContext(), "Faltan items para iniciar viaje", Toast.LENGTH_LONG).show();
@@ -157,13 +152,17 @@ public class EscanearDialog extends DialogFragment {
                             if(despd.getCajas() != countCaja)
                                 countCaja++;
                                 viewCajas.setText("CAJAS: "+countCaja+" DE "+despd.getCajas());
-                                despachosdData.updateCajaBolsaCount("1", npedido, ""+countBolsa, ""+countCaja);
+                                viajesData.updateCajaBolsaCount(opt, npedido, ""+countBolsa, ""+countCaja);
                         }else if(tipoenv.equals("BOLSA")){
                             //
-                            if(despd.getBolsas() != countBolsa)
+                            if(despd.getBolsas() != countBolsa && despd.getBolsas() != despd.getBolsascargadas()) {
                                 countBolsa++;
-                                viewBolsas.setText("BOLSAS: "+countBolsa+" DE "+despd.getBolsas());
-                                despachosdData.updateCajaBolsaCount("1", npedido, ""+countBolsa, ""+countCaja);
+                                viewBolsas.setText("BOLSAS: " + countBolsa + " DE " + despd.getBolsas());
+                                viajesData.updateCajaBolsaCount(opt, npedido, "" + countBolsa, "" + countCaja);
+                            }else{
+                                if(despd.getBolsas() == despd.getBolsascargadas())
+                                Toast.makeText(getContext(), "Bolsas Completas", Toast.LENGTH_LONG).show();
+                            }
                         }
                         viewNumPedido.setText("N° Pedido: "+npedido);
                         //

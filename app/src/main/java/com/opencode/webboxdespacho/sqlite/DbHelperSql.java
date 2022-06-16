@@ -17,7 +17,8 @@ public class DbHelperSql extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL(CREAR_TABLA_DESPACHOSD);
+        db.execSQL(CREAR_TABLA_VIAJES);
+        db.execSQL(CREAR_TABLA_VIAJESD);
         db.execSQL(CREAR_TABLA_PEDIDOS);
     }
 
@@ -37,7 +38,7 @@ public class DbHelperSql extends SQLiteOpenHelper {
             "BOLSAS             INTEGER NOT NULL " +
             ");";
 
-    public static final String CREAR_TABLA_DESPACHOSD = " CREATE TABLE DESPACHOSD( " +
+    public static final String CREAR_TABLA_VIAJESD = " CREATE TABLE VIAJESD( " +
             "ID_DESPACHOSD      INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,  " +
             "NROVIAJE           INTEGER NOT NULL, " +
             "PEDIDO             INTEGER NOT NULL, " +
@@ -49,4 +50,12 @@ public class DbHelperSql extends SQLiteOpenHelper {
             "BOLSASENTREGADAS   INTEGER NOT NULL " +
             ");";
 
+    public static final String CREAR_TABLA_VIAJES = " CREATE TABLE VIAJES( " +
+            "ID_VIAJES   INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,  " +
+            "FECHA       VARCHAR(200) NOT NULL, " +
+            "PATENTE     INTEGER NOT NULL, " +
+            "CHOFER      INTEGER NOT NULL, " +
+            "NROVIAJE    INTEGER NOT NULL, " +
+            "ESTADO      INTEGER NOT NULL "+
+            ");";
 }

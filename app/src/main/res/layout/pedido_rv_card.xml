@@ -47,9 +47,9 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:gravity="center"
+                android:gravity="center_vertical"
                 android:padding="3dp"
-                android:drawableEnd="@drawable/ic_baseline_circle_gray_24"
+                android:drawableStart="@drawable/ic_baseline_circle_gray_24"
                 android:textColor="?android:textColorPrimary" />
 
             <TextView
@@ -59,7 +59,7 @@
                 android:layout_weight="1"
                 android:gravity="center"
                 android:padding="3dp"
-                android:drawableEnd="@drawable/ic_baseline_circle_gray_24"
+                android:drawableStart="@drawable/ic_baseline_circle_gray_24"
                 android:textColor="?android:textColorPrimary" />
 
         </TableRow>

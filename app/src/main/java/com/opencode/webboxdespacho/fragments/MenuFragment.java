@@ -12,22 +12,29 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.opencode.webboxdespacho.R;
+import com.opencode.webboxdespacho.config.ApiConf;
 import com.opencode.webboxdespacho.fragments.dialogs.EscanearDialog;
 import com.opencode.webboxdespacho.fragments.dialogs.LoginDialog;
-import com.opencode.webboxdespacho.models.Despachosd;
-import com.opencode.webboxdespacho.sqlite.data.DespachosdData;
+import com.opencode.webboxdespacho.models.Viajes;
+import com.opencode.webboxdespacho.models.Viajesd;
+import com.opencode.webboxdespacho.sqlite.data.ViajesData;
 
 import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 /**
  * A simple {@link Fragment} subclass.
  * Use the {@link MenuFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class MenuFragment extends Fragment {
+public class MenuFragment extends Fragment implements LoginDialog.OnInputSelected{
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -69,16 +76,19 @@ public class MenuFragment extends Fragment {
         }
     }
 
-    private Button btnRevisar, btnCargarFurgon, btnIniciarViaje, btnSincronizaViaje;
+    private Button btnRevisar, btnCargarFurgon, btnIniciarViaje, btnSincronizaViaje, btnEntregaPedido, btnFinViaje;
     private AlertDialog alertDialog;
-    private DespachosdData despachosdData;
-    private List<Despachosd> listDespachosd;
+    private ViajesData viajesData;
+    private List<Viajes> listViajes;
+    private int numviaje=0;
+    private LinearLayout linearViajeSync;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view  = inflater.inflate(R.layout.fragment_menu, container, false);
+        viajesData = new ViajesData(getContext());
         alertDialog = new AlertDialog.Builder(getContext()).create();
         btnRevisar = view.findViewById(R.id.btn_opcion_revisar);
         btnRevisar.setOnClickListener(onClickRevisar);
@@ -88,16 +98,49 @@ public class MenuFragment extends Fragment {
         btnIniciarViaje.setOnClickListener(onClickIniciarViaje);
         btnSincronizaViaje = view.findViewById(R.id.btn_sincroniza_pedido);
         btnSincronizaViaje.setOnClickListener(onClickSincrViaje);
+        btnEntregaPedido = view.findViewById(R.id.btn_entrega_pedido);
+        btnEntregaPedido.setOnClickListener(onClickEntregaPedido);
+        btnFinViaje = view.findViewById(R.id.btn_finalizar_viaje);
+        btnFinViaje.setOnClickListener(onClickFinViaje);
+        linearViajeSync = view.findViewById(R.id.linear_viaje_sync);
+
+
+
+
 
         return view;
     }
+
+    private View.OnClickListener onClickFinViaje = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            LoginDialog newFragment = new LoginDialog();
+            Bundle bundle = new Bundle();
+            bundle.putString("OPT", "3");
+            newFragment.setArguments(bundle);
+            newFragment.setTargetFragment(MenuFragment.this, 1);
+            newFragment.show(getFragmentManager(), "Dialog");
+        }
+    };
+
+    private View.OnClickListener onClickEntregaPedido = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            EscanearDialog newFragment = new EscanearDialog();
+            Bundle bundle = new Bundle();
+            bundle.putString("OPT", "2");
+            newFragment.setArguments(bundle);
+            newFragment.setTargetFragment(MenuFragment.this, 1);
+            newFragment.show(getFragmentManager(), "EscanearDialog");
+        }
+    };
 
     private View.OnClickListener onClickSincrViaje= new View.OnClickListener() {
         @Override
         public void onClick(View view) {
             LoginDialog newFragment = new LoginDialog();
             newFragment.setTargetFragment(MenuFragment.this, 1);
-            newFragment.show(getFragmentManager(), "EscanearDialog");
+            newFragment.show(getFragmentManager(), "Dialog");
         }
     };
 
@@ -106,21 +149,29 @@ public class MenuFragment extends Fragment {
         public void onClick(View view) {
             int count_total = 0;
             int count_despacho = 0;
+
             //LA SUMA DE TODAS LAS CAJAS Y BOLSAS
             try {
-                listDespachosd = despachosdData.getDespachos();
-                for(Despachosd item: listDespachosd){
-                    count_total =count_total+(item.Bolsas+item.Cajas);
-                    count_despacho =count_despacho+(item.Bolsascargadas+item.Cajascargadas);
+                listViajes = viajesData.getDespachos();
+                for(Viajes item2: listViajes){
+                    //
+                    Viajesd item = item2.getViajesd();
+                    int bolsas = item.Bolsas;
+                    int cajas = item.Cajas;
+
+                    int bolsasc = item.Bolsascargadas;
+                    int cajasc = item.Cajascargadas;
+
+                    count_total = count_total + (item.Bolsas+item.Cajas);
+                    count_despacho = count_despacho + (item.Bolsascargadas+item.Cajascargadas);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
+            Log.e("TAG", ""+(count_total+count_despacho));
 
-            Log.e("TAG", ""+(count_total + count_despacho));
-
-            if(count_total == count_despacho) {
+            if(count_total  == count_despacho) {
                 alertDialog.setCanceledOnTouchOutside(false);
                 alertDialog.setTitle("Iniciar Viaje");
                 alertDialog.setMessage("¿Desea iniciar viaje?");
@@ -128,15 +179,22 @@ public class MenuFragment extends Fragment {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         alertDialog.dismiss();
+                        LoginDialog newFragment = new LoginDialog();
+                        Bundle bundle = new Bundle();
+                        bundle.putString("OPT", "2");
+                        newFragment.setArguments(bundle);
+                        newFragment.setTargetFragment(MenuFragment.this, 1);
+                        newFragment.show(getFragmentManager(), "Dialog");
                     }
                 });
-                alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Cancelar", new DialogInterface.OnClickListener() {
+                alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Volver", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         alertDialog.dismiss();
                     }
                 });
                 alertDialog.show();
+
             }else{
                 Toast.makeText(getContext(), "Faltan items para iniciar viaje", Toast.LENGTH_LONG).show();
             }
@@ -163,4 +221,52 @@ public class MenuFragment extends Fragment {
         }
     };
 
+    @Override
+    public void rspta(boolean value, String opt, int numviaje) {
+        //OPT:2=INICIA VIAJE,3=FIN VIAJE
+        //ESTADO:5=INICIA,9=FIN
+        /***/
+        if(opt.equals("2")){
+            try {
+                viajesData.updateEstadoViaje(String.valueOf(numviaje), "5");
+                putEstadoViaje(numviaje, 5);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else if(opt.equals("3")){
+            try {
+                viajesData.updateEstadoViaje(String.valueOf(numviaje), "9");
+                putEstadoViaje(numviaje, 9);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    //NUMVIAJE LLGA 0
+    void putEstadoViaje(int numviaje, int estado){
+        Call<Viajes> call = ApiConf.getData().putViajes(numviaje, estado);
+        call.enqueue(new Callback<Viajes>() {
+            @Override
+            public void onResponse(Call<Viajes> call, Response<Viajes> response) {
+                if(response.isSuccessful()){
+                    if(estado == 9){
+                        try {
+                            viajesData.borrarPedidos();
+                            Toast.makeText(getContext(),"Viaje cerrado", Toast.LENGTH_LONG).show();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }else{
+                        Toast.makeText(getContext(),"Viaje Actualizado..", Toast.LENGTH_LONG).show();
+                    }
+                }
+            }
+            @Override
+            public void onFailure(Call<Viajes> call, Throwable t) {
+                Log.e("ERROR--->", t.toString());
+            }
+        });
+
+    }
 }

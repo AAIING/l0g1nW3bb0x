@@ -1,28 +1,26 @@
 package com.opencode.webboxdespacho.fragments;
 
 import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.os.Bundle;
 
-import androidx.appcompat.widget.PopupMenu;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 
 import com.opencode.webboxdespacho.R;
-import com.opencode.webboxdespacho.fragments.adapters.DespachosdRecyclerAdapter;
-import com.opencode.webboxdespacho.fragments.dialogs.EscanearDialog;
-import com.opencode.webboxdespacho.models.Despachosd;
+import com.opencode.webboxdespacho.fragments.adapters.ViajesRecyclerAdapter;
+import com.opencode.webboxdespacho.fragments.dialogs.VerPedidoDialog;
+import com.opencode.webboxdespacho.models.Viajes;
+import com.opencode.webboxdespacho.models.Viajesd;
 import com.opencode.webboxdespacho.models.Pedidos;
-import com.opencode.webboxdespacho.sqlite.data.DespachosdData;
+import com.opencode.webboxdespacho.sqlite.data.ViajesData;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -67,11 +65,11 @@ public class RevisarFragment extends Fragment {
 
     private TextView viewIconCargarViaje, viewTotalPedidos, viewMenu, viewBack;
     private AlertDialog alertDialog;
-    private DespachosdData despachosdData;
+    private ViajesData viajesData;
     private int viajesOptions = 2; //CAMBIAR A 1
-    private List<Despachosd> listPedidos = new ArrayList<>();
+    private List<Viajes> listViajes = new ArrayList<>();
     private RecyclerView recyclerView;
-    private DespachosdRecyclerAdapter despachosdRecyclerAdapter;
+    private ViajesRecyclerAdapter viajesRecyclerAdapter;
     //
 
     @Override
@@ -89,7 +87,7 @@ public class RevisarFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_revisar, container, false);
         alertDialog = new AlertDialog.Builder(getContext()).create();
-        despachosdData = new DespachosdData(getContext());
+        viajesData = new ViajesData(getContext());
         recyclerView = view.findViewById(R.id.recycler_pedidos_lista);
         viewIconCargarViaje = view.findViewById(R.id.view_menu_icon_carga_viaje);
         viewIconCargarViaje.setOnClickListener(onClickCargarViaje);
@@ -99,9 +97,9 @@ public class RevisarFragment extends Fragment {
         viewBack.setOnClickListener(onClickBack);
         //
         try {
-            listPedidos = despachosdData.getDespachos();
+            listViajes = viajesData.getDespachos();
             loadPedidos();
-            viewTotalPedidos.setText("TOTAL PEDIDOS: "+listPedidos.size());
+            viewTotalPedidos.setText("TOTAL PEDIDOS: "+listViajes.size());
             viewTotalPedidos.setVisibility(View.VISIBLE);
         } catch (Exception e) {
             e.printStackTrace();
@@ -114,14 +112,27 @@ public class RevisarFragment extends Fragment {
         //
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        despachosdRecyclerAdapter = new DespachosdRecyclerAdapter(getContext(), listPedidos);
-        recyclerView.setAdapter(despachosdRecyclerAdapter);
-        despachosdRecyclerAdapter.setOnClickListener(new DespachosdRecyclerAdapter.OnClickListener() {
+        viajesRecyclerAdapter = new ViajesRecyclerAdapter(getContext(), listViajes);
+        recyclerView.setAdapter(viajesRecyclerAdapter);
+        viajesRecyclerAdapter.setOnClickListener(new ViajesRecyclerAdapter.OnClickListener() {
             @Override
             public void onVerPedido(View view, int position) {
-                Despachosd item = listPedidos.get(position);
+                Viajes item2 = listViajes.get(position);
+                Viajesd item = item2.getViajesd();
                 Pedidos pedidos = item.getPedidos();
-
+                //
+                VerPedidoDialog newFragment = new VerPedidoDialog();
+                Bundle bundle = new Bundle();
+                bundle.putString("CLIENTE", pedidos.getCliente());
+                bundle.putString("DIRENVIO", pedidos.getDireccionenvio()  );
+                bundle.putString("COMUNA", pedidos.getComunaenvio());
+                bundle.putString("CONDOMINIO", pedidos.getCondominioenvio());
+                bundle.putString("CAJAS", String.valueOf(pedidos.getCajas()));
+                bundle.putString("BOLSAS", String.valueOf(pedidos.getBolsas()));
+                newFragment.setArguments(bundle);
+                newFragment.setTargetFragment(RevisarFragment.this, 1);
+                newFragment.show(getFragmentManager(), "Dialog");
+                /*
                 String msje = "Dirección Despacho: "+pedidos.getDireccionenvio() + "\n" ;
                        msje +="Comuna: "+pedidos.getComunaenvio() + "\n" ;
                        msje +="Condominio: "+pedidos.getCondominioenvio() + "\n" ;
@@ -138,6 +149,7 @@ public class RevisarFragment extends Fragment {
                     }
                 });
                 alertDialog.show();
+                */
             }
         });
     }
