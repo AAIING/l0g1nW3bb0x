@@ -17,6 +17,7 @@ import com.journeyapps.barcodescanner.ScanContract;
 import com.journeyapps.barcodescanner.ScanOptions;
 import com.opencode.webboxdespacho.R;
 import com.opencode.webboxdespacho.config.Capture;
+import com.opencode.webboxdespacho.models.Itemsid;
 import com.opencode.webboxdespacho.models.Viajesd;
 import com.opencode.webboxdespacho.sqlite.data.ViajesData;
 
@@ -122,51 +123,53 @@ public class EscanearDialog extends DialogFragment {
             result -> {
                 //
                 if(result.getContents() != null) {
-                    //Toast.makeText(MyActivity.this, "Cancelled", Toast.LENGTH_LONG).show();
-                    String value = result.getContents();
-                    String[] parts = value.split("&");
-                    String npedido = parts[0];
-
-                    try{
-                        int numbr = Integer.parseInt(npedido);
-                    }catch (Exception e){
-                        Toast.makeText(getContext(), "QR Incorrecto", Toast.LENGTH_LONG).show();
-                        return;
-                    }
-
-                    String tipoenv = parts[1];
-
+                    //
                     try {
-                        Viajesd despd = viajesData.getDespachod(npedido);
+                        String value = result.getContents();
+                        Itemsid itemid = viajesData.getItem(value);
+                        String tipoenv = itemid.getTipoitem();
+                        Viajesd despd = viajesData.getDespachod(String.valueOf(itemid.getPedidosregistro()));
 
                         if(despd.getCajas() == despd.getCajascargadas() && despd.getBolsas() == despd.getBolsascargadas()){
                             //Toast.makeText(getContext(), "Faltan items para iniciar viaje", Toast.LENGTH_LONG).show();
-                            viewNumPedido.setText("N° Pedido: "+npedido +" ESTA OK");
-                            viewCajas.setText("CAJAS: "+despd.getCajas()+" DE "+despd.getCajas());
-                            viewBolsas.setText("BOLSAS: "+despd.getBolsas()+" DE "+despd.getBolsas());
+                            viewNumPedido.setText("N° Pedido: "+itemid.getPedidosregistro() +" ESTA OK");
+                            viewCajas.setText("CAJAS: "+despd.getCajascargadas()+" DE "+despd.getCajas());
+                            viewBolsas.setText("BOLSAS: "+despd.getBolsascargadas()+" DE "+despd.getBolsas());
                             return;
                         }
 
-                        if(tipoenv.equals("CAJA")){
-                            //
-                            if(despd.getCajas() != countCaja)
-                                countCaja++;
-                                viewCajas.setText("CAJAS: "+countCaja+" DE "+despd.getCajas());
-                                viajesData.updateCajaBolsaCount(opt, npedido, ""+countBolsa, ""+countCaja);
-                        }else if(tipoenv.equals("BOLSA")){
-                            //
-                            if(despd.getBolsas() != countBolsa && despd.getBolsas() != despd.getBolsascargadas()) {
-                                countBolsa++;
-                                viewBolsas.setText("BOLSAS: " + countBolsa + " DE " + despd.getBolsas());
-                                viajesData.updateCajaBolsaCount(opt, npedido, "" + countBolsa, "" + countCaja);
-                            }else{
-                                if(despd.getBolsas() == despd.getBolsascargadas())
-                                Toast.makeText(getContext(), "Bolsas Completas", Toast.LENGTH_LONG).show();
+                        if(itemid.getEscaneado() > 0) {
+                            Toast.makeText(getContext(), "QR YA LEIDO..", Toast.LENGTH_LONG).show();
+                            viewNumPedido.setText("N° Pedido: "+itemid.getPedidosregistro());
+                            viewCajas.setText("CAJAS: "+despd.getCajascargadas()+" DE "+despd.getCajas());
+                            viewBolsas.setText("BOLSAS: "+despd.getBolsascargadas()+" DE "+despd.getBolsas());
+                            return;
+
+                        } else {
+
+                            if (tipoenv.equals("CAJA")) {
+                                //
+                                if (despd.getCajas() != countCaja)
+                                    countCaja++;
+                                    viewCajas.setText("CAJAS: " + countCaja + " DE " + despd.getCajas());
+                                    viewBolsas.setText("BOLSAS: " + countBolsa + " DE " + despd.getBolsas());
+                                    viajesData.updateCajaBolsaCount(opt, String.valueOf(itemid.getPedidosregistro()), "" + countBolsa, "" + countCaja);
+                                    viajesData.updateItemEscaneado(value);
+                            } else if (tipoenv.equals("BOLSA")) {
+                                //
+                                if (despd.getBolsas() != countBolsa && despd.getBolsas() != despd.getBolsascargadas()) {
+                                    countBolsa++;
+                                    viewCajas.setText("CAJAS: " + countCaja + " DE " + despd.getCajas());
+                                    viewBolsas.setText("BOLSAS: " + countBolsa + " DE " + despd.getBolsas());
+                                    viajesData.updateCajaBolsaCount(opt, String.valueOf(itemid.getPedidosregistro()), "" + countBolsa, "" + countCaja);
+                                    viajesData.updateItemEscaneado(value);
+                                } else {
+                                    if (despd.getBolsas() == despd.getBolsascargadas())
+                                        Toast.makeText(getContext(), "Bolsas Completas", Toast.LENGTH_LONG).show();
+                                }
                             }
                         }
-                        viewNumPedido.setText("N° Pedido: "+npedido);
-                        //
-
+                        viewNumPedido.setText("N° Pedido: "+String.valueOf(itemid.getPedidosregistro()));
                     } catch (Exception e) {
                         e.printStackTrace();
                     }

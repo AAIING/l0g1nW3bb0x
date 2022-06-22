@@ -49,7 +49,6 @@
                 android:layout_weight="1"
                 android:gravity="center_vertical"
                 android:padding="3dp"
-                android:drawableStart="@drawable/ic_baseline_circle_gray_24"
                 android:textColor="?android:textColorPrimary" />
 
             <TextView
@@ -59,7 +58,6 @@
                 android:layout_weight="1"
                 android:gravity="center"
                 android:padding="3dp"
-                android:drawableStart="@drawable/ic_baseline_circle_gray_24"
                 android:textColor="?android:textColorPrimary" />
 
         </TableRow>

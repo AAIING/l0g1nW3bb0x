@@ -3,6 +3,8 @@ package com.opencode.webboxdespacho.models;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
+import java.util.List;
+
 public class Pedidos {
 
     @SerializedName("Registro")
@@ -173,6 +175,19 @@ public class Pedidos {
     @SerializedName("Empaquerestaurant")
     private int Empaquerestaurant ;
 
+    @SerializedName("Itemsids")
+    @Expose
+    private List<Itemsid> itemsids;
+
+    public List<Itemsid> getItemsids() {
+        return itemsids;
+    }
+
+    public void setItemsids(List<Itemsid> itemsids) {
+        this.itemsids = itemsids;
+    }
+
+/*
     @SerializedName("Clientes")
     @Expose
     private Clientes clientes;
@@ -184,7 +199,7 @@ public class Pedidos {
     public void setClientes(Clientes clientes) {
         this.clientes = clientes;
     }
-
+*/
     public int getRegistro() {
         return Registro;
     }

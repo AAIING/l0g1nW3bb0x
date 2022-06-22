@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -23,6 +24,7 @@ import com.opencode.webboxdespacho.models.Viajes;
 import com.opencode.webboxdespacho.models.Viajesd;
 import com.opencode.webboxdespacho.sqlite.data.ViajesData;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import retrofit2.Call;
@@ -79,8 +81,8 @@ public class MenuFragment extends Fragment implements LoginDialog.OnInputSelecte
     private Button btnRevisar, btnCargarFurgon, btnIniciarViaje, btnSincronizaViaje, btnEntregaPedido, btnFinViaje;
     private AlertDialog alertDialog;
     private ViajesData viajesData;
-    private List<Viajes> listViajes;
-    private int numviaje=0;
+    private List<Viajes> listViajes = new ArrayList<>();
+    private int numviaje=0, count_total=0, count_despacho=0;
     private LinearLayout linearViajeSync;
 
     @Override
@@ -89,6 +91,16 @@ public class MenuFragment extends Fragment implements LoginDialog.OnInputSelecte
         // Inflate the layout for this fragment
         View view  = inflater.inflate(R.layout.fragment_menu, container, false);
         viajesData = new ViajesData(getContext());
+        try {
+            listViajes = viajesData.getDespachos();
+            if(listViajes.size() > 0){
+                Viajes viajes = listViajes.get(0);
+                ((AppCompatActivity) getActivity()).getSupportActionBar().show();
+                ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle("Bienvenido "+viajes.Chofer);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         alertDialog = new AlertDialog.Builder(getContext()).create();
         btnRevisar = view.findViewById(R.id.btn_opcion_revisar);
         btnRevisar.setOnClickListener(onClickRevisar);
@@ -103,11 +115,6 @@ public class MenuFragment extends Fragment implements LoginDialog.OnInputSelecte
         btnFinViaje = view.findViewById(R.id.btn_finalizar_viaje);
         btnFinViaje.setOnClickListener(onClickFinViaje);
         linearViajeSync = view.findViewById(R.id.linear_viaje_sync);
-
-
-
-
-
         return view;
     }
 
@@ -147,29 +154,26 @@ public class MenuFragment extends Fragment implements LoginDialog.OnInputSelecte
     private View.OnClickListener onClickIniciarViaje = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-            int count_total = 0;
-            int count_despacho = 0;
+            count_total =0;
+            count_despacho =0;
+            for(Viajes viajes: listViajes){
+                List<Viajesd> viajesd = viajes.getViajesd();
 
-            //LA SUMA DE TODAS LAS CAJAS Y BOLSAS
-            try {
-                listViajes = viajesData.getDespachos();
-                for(Viajes item2: listViajes){
-                    //
-                    Viajesd item = item2.getViajesd();
-                    int bolsas = item.Bolsas;
-                    int cajas = item.Cajas;
+                for(Viajesd viajesd1: viajesd){
+                    int count1 =viajesd1.getCajas();
+                    int count2 =viajesd1.getBolsas();
 
-                    int bolsasc = item.Bolsascargadas;
-                    int cajasc = item.Cajascargadas;
+                    count_total += viajesd1.getCajas() + viajesd1.getBolsas();
+                    //count_total = count1 + viajesd1.getCajas() + viajesd1.getBolsas();
+                    //count_total = count_total ;
+                    //count_despacho = count_despacho + viajesd1.getCajascargadas() + viajesd1.getBolsascargadas();
+                    //count_despacho = count_despacho + viajesd1.getBolsascargadas();
 
-                    count_total = count_total + (item.Bolsas+item.Cajas);
-                    count_despacho = count_despacho + (item.Bolsascargadas+item.Cajascargadas);
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
             }
 
-            Log.e("TAG", ""+(count_total+count_despacho));
+            //LA SUMA DE TODAS LAS CAJAS Y BOLSAS
+            Log.e("TAG", "TOTAL "+(count_total) +" DESPACHADOS " + (count_despacho));
 
             if(count_total  == count_despacho) {
                 alertDialog.setCanceledOnTouchOutside(false);
@@ -205,6 +209,7 @@ public class MenuFragment extends Fragment implements LoginDialog.OnInputSelecte
     private View.OnClickListener onClickRevisar = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
+            ((AppCompatActivity) getActivity()).getSupportActionBar().hide();
             RevisarFragment newFragment = new RevisarFragment();
             FragmentTransaction fm = getActivity().getSupportFragmentManager().beginTransaction();
             fm.replace(R.id.main_activity_frame, newFragment);
@@ -267,6 +272,5 @@ public class MenuFragment extends Fragment implements LoginDialog.OnInputSelecte
                 Log.e("ERROR--->", t.toString());
             }
         });
-
     }
 }

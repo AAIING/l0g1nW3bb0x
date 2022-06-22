@@ -17,6 +17,7 @@ public class DbHelperSql extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
+        db.execSQL(CREAR_TABLA_ITEMSID);
         db.execSQL(CREAR_TABLA_VIAJES);
         db.execSQL(CREAR_TABLA_VIAJESD);
         db.execSQL(CREAR_TABLA_PEDIDOS);
@@ -26,6 +27,14 @@ public class DbHelperSql extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
 
     }
+
+    public static final String CREAR_TABLA_ITEMSID = " CREATE TABLE ITEMSID( " +
+            "ID_ITEMSID        INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,  " +
+            "CODIGO            VARCHAR(200) NOT NULL, " +
+            "TIPOITEM          VARCHAR(200) NOT NULL, " +
+            "PEDIDOSREGISTRO   INTEGER NOT NULL, "+
+            "ESCANEADO         INTEGER NOT NULL "+
+            ");";
 
     public static final String CREAR_TABLA_PEDIDOS = " CREATE TABLE PEDIDOS( " +
             "ID_PEDIDO          INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,  " +

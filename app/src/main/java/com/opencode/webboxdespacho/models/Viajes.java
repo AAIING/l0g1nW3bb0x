@@ -3,6 +3,8 @@ package com.opencode.webboxdespacho.models;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
+import java.util.List;
+
 public class Viajes {
 
     @SerializedName("Fecha")
@@ -19,7 +21,15 @@ public class Viajes {
 
     @SerializedName("Viajesd")
     @Expose
-    public Viajesd Viajesd ;
+    public List<Viajesd> Viajesd ;
+
+    public List<Viajesd> getViajesd() {
+        return Viajesd;
+    }
+
+    public void setViajesd(List<Viajesd> viajesd) {
+        Viajesd = viajesd;
+    }
 
     public int idViaje ;
 
@@ -77,11 +87,5 @@ public class Viajes {
         Estado = estado;
     }
 
-    public Viajesd getViajesd() {
-        return Viajesd;
-    }
 
-    public void setViajesd(Viajesd viajesd) {
-        Viajesd = viajesd;
-    }
 }

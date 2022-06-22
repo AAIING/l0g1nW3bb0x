@@ -21,7 +21,8 @@ import java.util.List;
 public class ViajesRecyclerAdapter extends RecyclerView.Adapter<ViajesRecyclerAdapter.ViewHolder>{
 
     private Context context;
-    private List<Viajes> listViajes;
+    //private List<Viajes> listViajes;
+    private List<Viajesd> listViajesd;
 
     private OnClickListener onClickListener = null;
 
@@ -33,9 +34,9 @@ public class ViajesRecyclerAdapter extends RecyclerView.Adapter<ViajesRecyclerAd
         this.onClickListener = onClickListener;
     }
 
-    public ViajesRecyclerAdapter(Context context, List<Viajes> listViajes) {
+    public ViajesRecyclerAdapter(Context context, List<Viajesd> listViajesd) {
         this.context = context;
-        this.listViajes = listViajes;
+        this.listViajesd = listViajesd;
     }
 
     @NonNull
@@ -47,12 +48,9 @@ public class ViajesRecyclerAdapter extends RecyclerView.Adapter<ViajesRecyclerAd
 
     @Override
     public void onBindViewHolder(@NonNull ViajesRecyclerAdapter.ViewHolder holder, @SuppressLint("RecyclerView") int position) {
-        Viajes item2 = listViajes.get(holder.getAdapterPosition());
-        Viajesd item = item2.getViajesd();
-        Pedidos pedidos = item.getPedidos();
 
-        holder.viewNumPedido.setText(String.valueOf(item.getPedido()));
-        holder.viewNombreCliente.setText(pedidos.getCliente());
+        Viajesd item2 = listViajesd.get(holder.getAdapterPosition());
+        Pedidos pedidos = item2.getPedidos();
 
         holder.viewVerPedido.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -62,16 +60,19 @@ public class ViajesRecyclerAdapter extends RecyclerView.Adapter<ViajesRecyclerAd
             }
         });
 
-        if(item.getCajas() == item.getCajascargadas()){
+        holder.viewNumPedido.setText(String.valueOf(item2.getPedido()));
+        holder.viewNombreCliente.setText(pedidos.getCliente());
+
+        if(item2.getCajas() == item2.getCajascargadas()){
             Drawable drawable = context.getResources().getDrawable(R.drawable.ic_baseline_green_check_24);
             holder.viewCheckCargadas.setCompoundDrawablesWithIntrinsicBounds(drawable, null, null, null);
         }
-
     }
 
     @Override
     public int getItemCount() {
-        return listViajes.size();
+        //return listViajes.size();
+        return listViajesd.size();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {

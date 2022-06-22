@@ -25,6 +25,7 @@ import com.opencode.webboxdespacho.models.Viajesd;
 import com.opencode.webboxdespacho.models.Login;
 import com.opencode.webboxdespacho.sqlite.data.ViajesData;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import retrofit2.Call;
@@ -102,6 +103,7 @@ public class LoginDialog extends DialogFragment {
     private SessionDatos sessionDatos;
     private ProgressDialog progressDialog;
     private String opt="1";
+    private List<Viajes> listViajes = new ArrayList<>();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -113,6 +115,11 @@ public class LoginDialog extends DialogFragment {
         sessionDatos = new SessionDatos(getContext());
         alertDialog = new AlertDialog.Builder(getContext()).create();
         viajesData = new ViajesData(getContext());
+        try {
+            listViajes = viajesData.getDespachos();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         etUser = view.findViewById(R.id.et_user);
         etUser.setText("");
         etPassword = view.findViewById(R.id.et_passwd);
@@ -219,6 +226,7 @@ public class LoginDialog extends DialogFragment {
                 if(response.isSuccessful()){
                     List<Viajes> respta = response.body();
                     try {
+                        if(listViajes.size() != 0)
                         viajesData.borrarPedidos();
                         viajesData.insertPedidos(respta);
                         alertDialog.setCanceledOnTouchOutside(false);
