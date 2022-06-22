@@ -111,19 +111,23 @@ public class ViajesData {
     public Viajesd getDespachod(String npedido) throws Exception{
         //
         Viajesd despd = new Viajesd();
+        Pedidos pedidos = new Pedidos();
+
         db = dbHelper.getWritableDatabase();
         try{
-            String query = "SELECT * FROM VIAJESD WHERE PEDIDO=?";
+            String query = "SELECT D.*, P.* FROM VIAJESD D LEFT JOIN PEDIDOS P ON D.PEDIDO = P.REGISTRO WHERE PEDIDO=?";
             String[] selectionsArgs = new String[]{npedido};
             Cursor cursor = db.rawQuery(query, selectionsArgs);
             if(cursor.moveToFirst()) {
                 while (!cursor.isAfterLast()) {
-                    despd.setCajas((short) cursor.getInt(cursor.getColumnIndexOrThrow("CAJAS")));
-                    despd.setBolsas((short) cursor.getInt(cursor.getColumnIndexOrThrow("BOLSAS")));
                     despd.setCajascargadas(cursor.getInt(cursor.getColumnIndexOrThrow("CAJASCARGADAS")));
                     despd.setBolsascargadas(cursor.getInt(cursor.getColumnIndexOrThrow("BOLSASCARGADAS")));
                     despd.setCajasentregadas(cursor.getInt(cursor.getColumnIndexOrThrow("CAJASENTREGADAS")));
                     despd.setBolsasentregadas(cursor.getInt(cursor.getColumnIndexOrThrow("BOLSASENTREGADAS")));
+                    //
+                    pedidos.setCajas((short) cursor.getInt(cursor.getColumnIndexOrThrow("CAJAS")));
+                    pedidos.setBolsas((short) cursor.getInt(cursor.getColumnIndexOrThrow("BOLSAS")));
+                    despd.setPedidos(pedidos);
                     cursor.moveToNext();
                 }
             }
@@ -176,8 +180,8 @@ public class ViajesData {
                         lookmap2.put(cursor.getInt(cursor.getColumnIndexOrThrow("PEDIDO")),"");
 
                         item_viajesd.setPedido(cursor.getInt(cursor.getColumnIndexOrThrow("PEDIDO")));
-                        item_viajesd.setCajas(cursor.getInt(cursor.getColumnIndexOrThrow("CAJAS")));
-                        item_viajesd.setBolsas(cursor.getInt(cursor.getColumnIndexOrThrow("BOLSAS")));
+                        //item_viajesd.setCajas(cursor.getInt(cursor.getColumnIndexOrThrow("CAJAS")));
+                        //item_viajesd.setBolsas(cursor.getInt(cursor.getColumnIndexOrThrow("BOLSAS")));
                         item_viajesd.setCajascargadas(cursor.getInt(cursor.getColumnIndexOrThrow("CAJASCARGADAS")));
                         item_viajesd.setBolsascargadas(cursor.getInt(cursor.getColumnIndexOrThrow("BOLSASCARGADAS")));
                         item_viajesd.setCajasentregadas(cursor.getInt(cursor.getColumnIndexOrThrow("CAJASENTREGADAS")));
@@ -226,13 +230,13 @@ public class ViajesData {
     public void borrarPedidos() throws Exception{
         db = dbHelper.getWritableDatabase();
         try{
-            String query3 = "DELETE FROM VIAJES";
+            String query3 ="DELETE FROM VIAJES";
             db.execSQL(query3,  new Object[]{});
-            String query = "DELETE FROM VIAJESD";
+            String query ="DELETE FROM VIAJESD";
             db.execSQL(query,  new Object[]{});
-            String query2 = "DELETE FROM PEDIDOS";
+            String query2 ="DELETE FROM PEDIDOS";
             db.execSQL(query2,  new Object[]{});
-            String query4 = "DELETE FROM ITEMSID";
+            String query4 ="DELETE FROM ITEMSID";
             db.execSQL(query4,  new Object[]{});
             dbHelper.close();
         }catch(Exception e){
@@ -261,16 +265,16 @@ public class ViajesData {
                 /***/
                 for(Viajesd item : item_viaje.getViajesd())
                 {
-                    String query = "INSERT INTO VIAJESD ( " +
-                            "NROVIAJE, PEDIDO, CAJAS, BOLSAS, CAJASCARGADAS, BOLSASCARGADAS, CAJASENTREGADAS, BOLSASENTREGADAS) " +
-                            "VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
+                    String query = "INSERT INTO VIAJESD ( " + //CAJAS, BOLSAS,
+                            "NROVIAJE, PEDIDO, CAJASCARGADAS, BOLSASCARGADAS, CAJASENTREGADAS, BOLSASENTREGADAS) " +
+                            "VALUES (?, ?, ?, ?, ?, ?);"; //, ?, ?
                     db.execSQL(
                             query,
                             new Object[]{
                                     item.Nroviaje,
                                     item.Pedido,
-                                    item.Cajas,
-                                    item.Bolsas,
+                                    //item.Cajas,
+                                    //item.Bolsas,
                                     item.Cajascargadas,
                                     item.Bolsascargadas,
                                     item.Cajasentregadas,

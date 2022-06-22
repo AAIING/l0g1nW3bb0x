@@ -20,6 +20,7 @@ import com.opencode.webboxdespacho.R;
 import com.opencode.webboxdespacho.config.ApiConf;
 import com.opencode.webboxdespacho.fragments.dialogs.EscanearDialog;
 import com.opencode.webboxdespacho.fragments.dialogs.LoginDialog;
+import com.opencode.webboxdespacho.models.Pedidos;
 import com.opencode.webboxdespacho.models.Viajes;
 import com.opencode.webboxdespacho.models.Viajesd;
 import com.opencode.webboxdespacho.sqlite.data.ViajesData;
@@ -160,13 +161,14 @@ public class MenuFragment extends Fragment implements LoginDialog.OnInputSelecte
                 List<Viajesd> viajesd = viajes.getViajesd();
 
                 for(Viajesd viajesd1: viajesd){
-                    int count1 =viajesd1.getCajas();
-                    int count2 =viajesd1.getBolsas();
+                    Pedidos pedidos = viajesd1.getPedidos();
+                    //int count1 =viajesd1.getCajas();
+                    //int count2 =viajesd1.getBolsas();
 
-                    count_total += viajesd1.getCajas() + viajesd1.getBolsas();
+                    count_total += pedidos.getCajas() + pedidos.getBolsas();
                     //count_total = count1 + viajesd1.getCajas() + viajesd1.getBolsas();
                     //count_total = count_total ;
-                    //count_despacho = count_despacho + viajesd1.getCajascargadas() + viajesd1.getBolsascargadas();
+                    count_despacho += viajesd1.getCajascargadas() + viajesd1.getBolsascargadas();
                     //count_despacho = count_despacho + viajesd1.getBolsascargadas();
 
                 }

@@ -63,7 +63,7 @@ public class ViajesRecyclerAdapter extends RecyclerView.Adapter<ViajesRecyclerAd
         holder.viewNumPedido.setText(String.valueOf(item2.getPedido()));
         holder.viewNombreCliente.setText(pedidos.getCliente());
 
-        if(item2.getCajas() == item2.getCajascargadas()){
+        if(pedidos.getCajas() == item2.getCajascargadas()){
             Drawable drawable = context.getResources().getDrawable(R.drawable.ic_baseline_green_check_24);
             holder.viewCheckCargadas.setCompoundDrawablesWithIntrinsicBounds(drawable, null, null, null);
         }

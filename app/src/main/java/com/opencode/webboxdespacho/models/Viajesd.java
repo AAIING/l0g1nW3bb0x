@@ -11,11 +11,11 @@ public class Viajesd {
     @SerializedName("Pedido")
     public int Pedido ;
 
-    @SerializedName("Cajas")
-    public int Cajas ;
+    //@SerializedName("Cajas")
+    //public int Cajas ;
 
-    @SerializedName("Bolsas")
-    public int Bolsas ;
+    //@SerializedName("Bolsas")
+    //public int Bolsas ;
 
     @SerializedName("Cajascargadas")
     public int Cajascargadas ;
@@ -43,7 +43,6 @@ public class Viajesd {
         this.pedidos = pedidos;
     }
 
-
     public int getIddespachod() {
         return Iddespachod;
     }
@@ -68,6 +67,7 @@ public class Viajesd {
         Pedido = pedido;
     }
 
+    /*
     public int getCajas() {
         return Cajas;
     }
@@ -83,7 +83,7 @@ public class Viajesd {
     public void setBolsas(int bolsas) {
         Bolsas = bolsas;
     }
-
+*/
     public int getCajascargadas() {
         return Cajascargadas;
     }

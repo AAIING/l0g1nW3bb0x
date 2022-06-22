@@ -51,8 +51,8 @@ public class DbHelperSql extends SQLiteOpenHelper {
             "ID_DESPACHOSD      INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,  " +
             "NROVIAJE           INTEGER NOT NULL, " +
             "PEDIDO             INTEGER NOT NULL, " +
-            "CAJAS              INTEGER NOT NULL, " +
-            "BOLSAS             INTEGER NOT NULL, " +
+            //"CAJAS              INTEGER NOT NULL, " +
+            //"BOLSAS             INTEGER NOT NULL, " +
             "CAJASCARGADAS      INTEGER NOT NULL, " +
             "BOLSASCARGADAS     INTEGER NOT NULL, " +
             "CAJASENTREGADAS    INTEGER NOT NULL, " +

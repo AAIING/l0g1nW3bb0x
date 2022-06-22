@@ -18,6 +18,7 @@ import com.journeyapps.barcodescanner.ScanOptions;
 import com.opencode.webboxdespacho.R;
 import com.opencode.webboxdespacho.config.Capture;
 import com.opencode.webboxdespacho.models.Itemsid;
+import com.opencode.webboxdespacho.models.Pedidos;
 import com.opencode.webboxdespacho.models.Viajesd;
 import com.opencode.webboxdespacho.sqlite.data.ViajesData;
 
@@ -129,42 +130,43 @@ public class EscanearDialog extends DialogFragment {
                         Itemsid itemid = viajesData.getItem(value);
                         String tipoenv = itemid.getTipoitem();
                         Viajesd despd = viajesData.getDespachod(String.valueOf(itemid.getPedidosregistro()));
+                        Pedidos pedidos = despd.getPedidos();
 
-                        if(despd.getCajas() == despd.getCajascargadas() && despd.getBolsas() == despd.getBolsascargadas()){
+                        if(pedidos.getCajas() == despd.getCajascargadas() && pedidos.getBolsas() == despd.getBolsascargadas()){
                             //Toast.makeText(getContext(), "Faltan items para iniciar viaje", Toast.LENGTH_LONG).show();
                             viewNumPedido.setText("N° Pedido: "+itemid.getPedidosregistro() +" ESTA OK");
-                            viewCajas.setText("CAJAS: "+despd.getCajascargadas()+" DE "+despd.getCajas());
-                            viewBolsas.setText("BOLSAS: "+despd.getBolsascargadas()+" DE "+despd.getBolsas());
+                            viewCajas.setText("CAJAS: "+despd.getCajascargadas()+" DE "+pedidos.getCajas());
+                            viewBolsas.setText("BOLSAS: "+despd.getBolsascargadas()+" DE "+pedidos.getBolsas());
                             return;
                         }
 
                         if(itemid.getEscaneado() > 0) {
                             Toast.makeText(getContext(), "QR YA LEIDO..", Toast.LENGTH_LONG).show();
                             viewNumPedido.setText("N° Pedido: "+itemid.getPedidosregistro());
-                            viewCajas.setText("CAJAS: "+despd.getCajascargadas()+" DE "+despd.getCajas());
-                            viewBolsas.setText("BOLSAS: "+despd.getBolsascargadas()+" DE "+despd.getBolsas());
+                            viewCajas.setText("CAJAS: "+despd.getCajascargadas()+" DE "+pedidos.getCajas());
+                            viewBolsas.setText("BOLSAS: "+despd.getBolsascargadas()+" DE "+pedidos.getBolsas());
                             return;
 
                         } else {
 
-                            if (tipoenv.equals("CAJA")) {
+                            if(tipoenv.equals("CAJA")) {
                                 //
-                                if (despd.getCajas() != countCaja)
+                                if (pedidos.getCajas() != countCaja)
                                     countCaja++;
-                                    viewCajas.setText("CAJAS: " + countCaja + " DE " + despd.getCajas());
-                                    viewBolsas.setText("BOLSAS: " + countBolsa + " DE " + despd.getBolsas());
+                                    viewCajas.setText("CAJAS: " + countCaja + " DE " + pedidos.getCajas());
+                                    viewBolsas.setText("BOLSAS: " + countBolsa + " DE " + pedidos.getBolsas());
                                     viajesData.updateCajaBolsaCount(opt, String.valueOf(itemid.getPedidosregistro()), "" + countBolsa, "" + countCaja);
                                     viajesData.updateItemEscaneado(value);
-                            } else if (tipoenv.equals("BOLSA")) {
+                            } else if(tipoenv.equals("BOLSA")) {
                                 //
-                                if (despd.getBolsas() != countBolsa && despd.getBolsas() != despd.getBolsascargadas()) {
+                                if (pedidos.getBolsas() != countBolsa && pedidos.getBolsas() != despd.getBolsascargadas()) {
                                     countBolsa++;
-                                    viewCajas.setText("CAJAS: " + countCaja + " DE " + despd.getCajas());
-                                    viewBolsas.setText("BOLSAS: " + countBolsa + " DE " + despd.getBolsas());
+                                    viewCajas.setText("CAJAS: " + countCaja + " DE " + pedidos.getCajas());
+                                    viewBolsas.setText("BOLSAS: " + countBolsa + " DE " + pedidos.getBolsas());
                                     viajesData.updateCajaBolsaCount(opt, String.valueOf(itemid.getPedidosregistro()), "" + countBolsa, "" + countCaja);
                                     viajesData.updateItemEscaneado(value);
                                 } else {
-                                    if (despd.getBolsas() == despd.getBolsascargadas())
+                                    if (pedidos.getBolsas() == despd.getBolsascargadas())
                                         Toast.makeText(getContext(), "Bolsas Completas", Toast.LENGTH_LONG).show();
                                 }
                             }

@@ -200,7 +200,8 @@ public class LoginDialog extends DialogFragment {
                         etNumViaje.setVisibility(View.VISIBLE);
                     }else{
                         dismiss();
-                        //mOnInputSelected.rspta(isLogin, opt, 0);
+                        String numviaje = etNumViaje.getText().toString();
+                        mOnInputSelected.rspta(isLogin, opt, Integer.parseInt(numviaje));
                     }
                     progressDialog.dismiss();
                 }else{
