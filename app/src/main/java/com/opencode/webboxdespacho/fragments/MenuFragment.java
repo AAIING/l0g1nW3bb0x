@@ -18,6 +18,8 @@ import android.widget.Toast;
 
 import com.opencode.webboxdespacho.R;
 import com.opencode.webboxdespacho.config.ApiConf;
+import com.opencode.webboxdespacho.config.SessionDatos;
+import com.opencode.webboxdespacho.config.SessionKeys;
 import com.opencode.webboxdespacho.fragments.dialogs.EscanearDialog;
 import com.opencode.webboxdespacho.fragments.dialogs.LoginDialog;
 import com.opencode.webboxdespacho.models.Pedidos;
@@ -85,12 +87,14 @@ public class MenuFragment extends Fragment implements LoginDialog.OnInputSelecte
     private List<Viajes> listViajes = new ArrayList<>();
     private int numviaje=0, count_total=0, count_despacho=0;
     private LinearLayout linearViajeSync;
+    private SessionDatos sessionDatos;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view  = inflater.inflate(R.layout.fragment_menu, container, false);
+        sessionDatos = new SessionDatos(getContext());
         viajesData = new ViajesData(getContext());
         try {
             listViajes = viajesData.getDespachos();
@@ -122,12 +126,44 @@ public class MenuFragment extends Fragment implements LoginDialog.OnInputSelecte
     private View.OnClickListener onClickFinViaje = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-            LoginDialog newFragment = new LoginDialog();
-            Bundle bundle = new Bundle();
-            bundle.putString("OPT", "3");
-            newFragment.setArguments(bundle);
-            newFragment.setTargetFragment(MenuFragment.this, 1);
-            newFragment.show(getFragmentManager(), "Dialog");
+            count_total =0;
+            count_despacho =0;
+            for(Viajes viajes: listViajes){
+                List<Viajesd> viajesd = viajes.getViajesd();
+                //
+                for(Viajesd viajesd1: viajesd){
+                    Pedidos pedidos = viajesd1.getPedidos();
+                    count_total += pedidos.getCajas() + pedidos.getBolsas();
+                    count_despacho += viajesd1.getCajasentregadas() + viajesd1.getBolsasentregadas();
+                }
+            }
+            if(count_total == count_despacho){
+                alertDialog.setCanceledOnTouchOutside(false);
+                alertDialog.setTitle("Finalizar Viaje");
+                alertDialog.setMessage("¿Desea finalizar viaje?");
+                alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Aceptar", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        alertDialog.dismiss();
+                        LoginDialog newFragment = new LoginDialog();
+                        Bundle bundle = new Bundle();
+                        bundle.putString("OPT", "3");
+                        newFragment.setArguments(bundle);
+                        newFragment.setTargetFragment(MenuFragment.this, 1);
+                        newFragment.show(getFragmentManager(), "Dialog");
+                    }
+                });
+                alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Volver", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        alertDialog.dismiss();
+                    }
+                });
+                alertDialog.show();
+                //
+            }else{
+                Toast.makeText(getContext(), "Faltan items para finalizar viaje", Toast.LENGTH_LONG).show();
+            }
         }
     };
 
@@ -157,26 +193,21 @@ public class MenuFragment extends Fragment implements LoginDialog.OnInputSelecte
         public void onClick(View view) {
             count_total =0;
             count_despacho =0;
-            for(Viajes viajes: listViajes){
-                List<Viajesd> viajesd = viajes.getViajesd();
-
-                for(Viajesd viajesd1: viajesd){
-                    Pedidos pedidos = viajesd1.getPedidos();
-                    //int count1 =viajesd1.getCajas();
-                    //int count2 =viajesd1.getBolsas();
-
-                    count_total += pedidos.getCajas() + pedidos.getBolsas();
-                    //count_total = count1 + viajesd1.getCajas() + viajesd1.getBolsas();
-                    //count_total = count_total ;
-                    count_despacho += viajesd1.getCajascargadas() + viajesd1.getBolsascargadas();
-                    //count_despacho = count_despacho + viajesd1.getBolsascargadas();
-
+            try {
+                listViajes = viajesData.getDespachos();
+                for(Viajes viajes: listViajes){
+                    List<Viajesd> viajesd = viajes.getViajesd();
+                    for(Viajesd viajesd1: viajesd){
+                        Pedidos pedidos = viajesd1.getPedidos();
+                        count_total += pedidos.getCajas() + pedidos.getBolsas();
+                        count_despacho += viajesd1.getCajascargadas() + viajesd1.getBolsascargadas();
+                    }
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-
             //LA SUMA DE TODAS LAS CAJAS Y BOLSAS
-            Log.e("TAG", "TOTAL "+(count_total) +" DESPACHADOS " + (count_despacho));
-
+            //Log.e("TAG", "TOTAL "+(count_total)+" DESPACHADOS " +(count_despacho));
             if(count_total  == count_despacho) {
                 alertDialog.setCanceledOnTouchOutside(false);
                 alertDialog.setTitle("Iniciar Viaje");
@@ -200,11 +231,10 @@ public class MenuFragment extends Fragment implements LoginDialog.OnInputSelecte
                     }
                 });
                 alertDialog.show();
-
+                //
             }else{
                 Toast.makeText(getContext(), "Faltan items para iniciar viaje", Toast.LENGTH_LONG).show();
             }
-
         }
     };
 
@@ -233,7 +263,10 @@ public class MenuFragment extends Fragment implements LoginDialog.OnInputSelecte
         //OPT:2=INICIA VIAJE,3=FIN VIAJE
         //ESTADO:5=INICIA,9=FIN
         /***/
-        if(opt.equals("2")){
+        if(opt.equals("1")){
+            sessionDatos.setIdViaje(String.valueOf(numviaje));
+            //
+        } else if(opt.equals("2")){
             try {
                 viajesData.updateEstadoViaje(String.valueOf(numviaje), "5");
                 putEstadoViaje(numviaje, 5);
@@ -250,7 +283,7 @@ public class MenuFragment extends Fragment implements LoginDialog.OnInputSelecte
         }
     }
 
-    //NUMVIAJE LLGA 0
+    //
     void putEstadoViaje(int numviaje, int estado){
         Call<Viajes> call = ApiConf.getData().putViajes(numviaje, estado);
         call.enqueue(new Callback<Viajes>() {
@@ -259,6 +292,7 @@ public class MenuFragment extends Fragment implements LoginDialog.OnInputSelecte
                 if(response.isSuccessful()){
                     if(estado == 9){
                         try {
+                            /***/
                             viajesData.borrarPedidos();
                             Toast.makeText(getContext(),"Viaje cerrado", Toast.LENGTH_LONG).show();
                         } catch (Exception e) {

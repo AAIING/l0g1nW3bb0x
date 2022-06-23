@@ -29,11 +29,12 @@ public class DbHelperSql extends SQLiteOpenHelper {
     }
 
     public static final String CREAR_TABLA_ITEMSID = " CREATE TABLE ITEMSID( " +
-            "ID_ITEMSID        INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,  " +
-            "CODIGO            VARCHAR(200) NOT NULL, " +
-            "TIPOITEM          VARCHAR(200) NOT NULL, " +
-            "PEDIDOSREGISTRO   INTEGER NOT NULL, "+
-            "ESCANEADO         INTEGER NOT NULL "+
+            "ID_ITEMSID             INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,  " +
+            "CODIGO                 VARCHAR(200) NOT NULL, " +
+            "TIPOITEM               VARCHAR(200) NOT NULL, " +
+            "PEDIDOSREGISTRO        INTEGER NOT NULL, "+
+            "ESCANEADO              INTEGER NOT NULL, "+
+            "ESCANEADOENTREGADO     INTEGER NOT NULL "+
             ");";
 
     public static final String CREAR_TABLA_PEDIDOS = " CREATE TABLE PEDIDOS( " +

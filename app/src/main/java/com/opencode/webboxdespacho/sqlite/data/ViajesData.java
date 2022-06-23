@@ -24,10 +24,15 @@ public class ViajesData {
         dbHelper = new DbHelperSql(context);
     }
 
-    public void updateItemEscaneado(String codigo) throws Exception{
+    public void updateItemEscaneado(String codigo, String opt) throws Exception{
         db = dbHelper.getWritableDatabase();
         try {
-            String query ="UPDATE ITEMSID SET ESCANEADO=1 WHERE CODIGO=?";
+            String query = "";
+            if(opt.equals("1")) {
+                 query = "UPDATE ITEMSID SET ESCANEADO=1 WHERE CODIGO=?";
+            } else if(opt.equals("2")){
+                query = "UPDATE ITEMSID SET ESCANEADOENTREGADO=1 WHERE CODIGO=?";
+            }
             db.execSQL(query, new Object[] {
                     codigo
             });
@@ -95,6 +100,7 @@ public class ViajesData {
                     itemid.setTipoitem(cursor.getString(cursor.getColumnIndexOrThrow("TIPOITEM")));
                     itemid.setPedidosregistro(cursor.getInt(cursor.getColumnIndexOrThrow("PEDIDOSREGISTRO")));
                     itemid.setEscaneado(cursor.getInt(cursor.getColumnIndexOrThrow("ESCANEADO")));
+                    itemid.setEscaneadoEntregado(cursor.getInt(cursor.getColumnIndexOrThrow("ESCANEADOENTREGADO")));
                     cursor.moveToNext();
                 }
             }
@@ -112,7 +118,6 @@ public class ViajesData {
         //
         Viajesd despd = new Viajesd();
         Pedidos pedidos = new Pedidos();
-
         db = dbHelper.getWritableDatabase();
         try{
             String query = "SELECT D.*, P.* FROM VIAJESD D LEFT JOIN PEDIDOS P ON D.PEDIDO = P.REGISTRO WHERE PEDIDO=?";
@@ -180,8 +185,6 @@ public class ViajesData {
                         lookmap2.put(cursor.getInt(cursor.getColumnIndexOrThrow("PEDIDO")),"");
 
                         item_viajesd.setPedido(cursor.getInt(cursor.getColumnIndexOrThrow("PEDIDO")));
-                        //item_viajesd.setCajas(cursor.getInt(cursor.getColumnIndexOrThrow("CAJAS")));
-                        //item_viajesd.setBolsas(cursor.getInt(cursor.getColumnIndexOrThrow("BOLSAS")));
                         item_viajesd.setCajascargadas(cursor.getInt(cursor.getColumnIndexOrThrow("CAJASCARGADAS")));
                         item_viajesd.setBolsascargadas(cursor.getInt(cursor.getColumnIndexOrThrow("BOLSASCARGADAS")));
                         item_viajesd.setCajasentregadas(cursor.getInt(cursor.getColumnIndexOrThrow("CAJASENTREGADAS")));
@@ -197,24 +200,18 @@ public class ViajesData {
 
                         listitems = new ArrayList<Itemsid>();
                         pedidos.setItemsids(listitems);
-
                         item_viajesd.setPedidos(pedidos);
-
                         listd.add(item_viajesd);
-                        
                         viajes.setViajesd(listd);
-
                     }
 
                     Itemsid itemsid = new Itemsid();
-
                     itemsid.setCodigo(cursor.getString(cursor.getColumnIndexOrThrow("CODIGO")));
                     itemsid.setTipoitem(cursor.getString(cursor.getColumnIndexOrThrow("TIPOITEM")));
                     itemsid.setPedidosregistro(cursor.getInt(cursor.getColumnIndexOrThrow("PEDIDOSREGISTRO")));
                     itemsid.setEscaneado(cursor.getInt(cursor.getColumnIndexOrThrow("ESCANEADO")));
 
                     listitems.add(itemsid);
-
                     cursor.moveToNext();
                 }
             }
@@ -299,14 +296,15 @@ public class ViajesData {
                     /***/
                     for(Itemsid itemsid: pedidos.getItemsids()){
                             String query4 = "INSERT INTO ITEMSID ( " +
-                                    "CODIGO, TIPOITEM, PEDIDOSREGISTRO, ESCANEADO) " +
-                                    "VALUES (?, ?, ?, ?);";
+                                    "CODIGO, TIPOITEM, PEDIDOSREGISTRO, ESCANEADO, ESCANEADOENTREGADO) " +
+                                    "VALUES (?, ?, ?, ?, ?);";
                             db.execSQL(
                                     query4,
                                     new Object[]{
                                             itemsid.getCodigo(),
                                             itemsid.getTipoitem(),
                                             itemsid.getPedidosregistro(),
+                                            0,
                                             0
                                     });
                     }

@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 
+import java.util.HashMap;
+
 public class SessionDatos {
 
     private final SharedPreferences preferences;
@@ -14,6 +16,17 @@ public class SessionDatos {
         this.mContext = mContext;
         preferences=mContext.getSharedPreferences(SessionKeys.data_app.name(), Context.MODE_PRIVATE);
         editor=preferences.edit();
+    }
+
+    public HashMap<SessionKeys, String> getRecord(){
+        HashMap<SessionKeys, String> map = new HashMap<>();
+        map.put(SessionKeys.idViaje, preferences.getString(SessionKeys.idViaje.name(), "0"));
+        return  map;
+    }
+
+    public void setIdViaje(String id){
+        editor.putString(SessionKeys.idViaje.name(), id);
+        editor.commit();
     }
 
     public boolean CheckSession(){

@@ -1,11 +1,13 @@
 package com.opencode.webboxdespacho.fragments.dialogs;
 
+import android.graphics.Color;
 import android.os.Bundle;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -71,13 +73,15 @@ public class EscanearDialog extends DialogFragment {
         }
     }
 
-    private int countCaja =0, countBolsa =0;
-    private TextView viewBolsas, viewCajas, viewNumPedido;
+    private int countCaja =0, countBolsa =0; //, countCajaEntregada =0, countBolsaEntregada =0
+    private TextView viewBolsas, viewCajas, viewNumPedido, viewQrEscaneado;
     private Button btnEscan, btnClose;
     private ScanOptions options;
     private ViajesData viajesData;
     private List<Viajesd> listDespachosd;
     private String opt = "1";
+    private Handler handler = new Handler();
+    private Runnable runnable;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -98,6 +102,7 @@ public class EscanearDialog extends DialogFragment {
         viewBolsas = view.findViewById(R.id.view_num_bolsas);
         viewCajas = view.findViewById(R.id.view_num_cajas);
         viewNumPedido = view.findViewById(R.id.view_num_pedido_escan);
+        viewQrEscaneado = view.findViewById(R.id.view_qr_msje_escan);
 
         if(getArguments() != null){
             opt = getArguments().getString("OPT");
@@ -125,57 +130,139 @@ public class EscanearDialog extends DialogFragment {
                 //
                 if(result.getContents() != null) {
                     //
-                    try {
-                        String value = result.getContents();
-                        Itemsid itemid = viajesData.getItem(value);
-                        String tipoenv = itemid.getTipoitem();
-                        Viajesd despd = viajesData.getDespachod(String.valueOf(itemid.getPedidosregistro()));
-                        Pedidos pedidos = despd.getPedidos();
+                    String value = result.getContents();
+                    if(opt.equals("1")) {
+                        /** PARA SUBIDA DE ITEMS AL FURGON*/
+                        try {
 
-                        if(pedidos.getCajas() == despd.getCajascargadas() && pedidos.getBolsas() == despd.getBolsascargadas()){
-                            //Toast.makeText(getContext(), "Faltan items para iniciar viaje", Toast.LENGTH_LONG).show();
-                            viewNumPedido.setText("N° Pedido: "+itemid.getPedidosregistro() +" ESTA OK");
-                            viewCajas.setText("CAJAS: "+despd.getCajascargadas()+" DE "+pedidos.getCajas());
-                            viewBolsas.setText("BOLSAS: "+despd.getBolsascargadas()+" DE "+pedidos.getBolsas());
-                            return;
-                        }
+                            Itemsid itemid = viajesData.getItem(value);
+                            String tipoenv = itemid.getTipoitem();
+                            Viajesd despd = viajesData.getDespachod(String.valueOf(itemid.getPedidosregistro()));
+                            Pedidos pedidos = despd.getPedidos();
+                            //
+                            handler.removeCallbacks(runnable);
+                            runnable = new Runnable() {
+                                @Override
+                                public void run() {
+                                    handler.postDelayed(this, 1000);
+                                    //
+                                    if (pedidos.getCajas() == despd.getCajascargadas() && pedidos.getBolsas() == despd.getBolsascargadas()) {
+                                        viewNumPedido.setText("N° Pedido: " + itemid.getPedidosregistro());
+                                        viewQrEscaneado.setText("PEDIDO COMPLETADO");
+                                        viewQrEscaneado.setTextColor(Color.GREEN);
+                                        viewCajas.setText("CAJAS: " + despd.getCajascargadas() + " DE " + pedidos.getCajas());
+                                        viewBolsas.setText("BOLSAS: " + despd.getBolsascargadas() + " DE " + pedidos.getBolsas());
+                                        return;
+                                    }
+                                }
+                            };
+                            handler.postDelayed(runnable, 0);
 
-                        if(itemid.getEscaneado() > 0) {
-                            Toast.makeText(getContext(), "QR YA LEIDO..", Toast.LENGTH_LONG).show();
-                            viewNumPedido.setText("N° Pedido: "+itemid.getPedidosregistro());
-                            viewCajas.setText("CAJAS: "+despd.getCajascargadas()+" DE "+pedidos.getCajas());
-                            viewBolsas.setText("BOLSAS: "+despd.getBolsascargadas()+" DE "+pedidos.getBolsas());
-                            return;
+                            if (itemid.getEscaneado() > 0) {
+                                viewNumPedido.setText("N° Pedido: " + itemid.getPedidosregistro());
+                                viewQrEscaneado.setText("QR REPETIDO");
+                                viewQrEscaneado.setTextColor(Color.RED);
+                                viewCajas.setText("CAJAS: " + despd.getCajascargadas() + " DE " + pedidos.getCajas());
+                                viewBolsas.setText("BOLSAS: " + despd.getBolsascargadas() + " DE " + pedidos.getBolsas());
+                                return;
 
-                        } else {
+                            } else {
+                                /** ESCANEADO IGUAL A 0*/
+                                if (tipoenv.equals("CAJA")) {
+                                    //
+                                    if (pedidos.getCajas() != countCaja)
+                                        countCaja++;
+                                        viewCajas.setText("CAJAS: " + countCaja + " DE " + pedidos.getCajas());
+                                        viewBolsas.setText("BOLSAS: " + countBolsa + " DE " + pedidos.getBolsas());
+                                        viewQrEscaneado.setText("QR ACEPTADO");
+                                        viewQrEscaneado.setTextColor(Color.GREEN);
+                                        viajesData.updateCajaBolsaCount(opt, String.valueOf(itemid.getPedidosregistro()), "" + countBolsa, "" + countCaja);
+                                        viajesData.updateItemEscaneado(value, opt);
 
-                            if(tipoenv.equals("CAJA")) {
-                                //
-                                if (pedidos.getCajas() != countCaja)
-                                    countCaja++;
-                                    viewCajas.setText("CAJAS: " + countCaja + " DE " + pedidos.getCajas());
-                                    viewBolsas.setText("BOLSAS: " + countBolsa + " DE " + pedidos.getBolsas());
-                                    viajesData.updateCajaBolsaCount(opt, String.valueOf(itemid.getPedidosregistro()), "" + countBolsa, "" + countCaja);
-                                    viajesData.updateItemEscaneado(value);
-                            } else if(tipoenv.equals("BOLSA")) {
-                                //
-                                if (pedidos.getBolsas() != countBolsa && pedidos.getBolsas() != despd.getBolsascargadas()) {
-                                    countBolsa++;
-                                    viewCajas.setText("CAJAS: " + countCaja + " DE " + pedidos.getCajas());
-                                    viewBolsas.setText("BOLSAS: " + countBolsa + " DE " + pedidos.getBolsas());
-                                    viajesData.updateCajaBolsaCount(opt, String.valueOf(itemid.getPedidosregistro()), "" + countBolsa, "" + countCaja);
-                                    viajesData.updateItemEscaneado(value);
-                                } else {
-                                    if (pedidos.getBolsas() == despd.getBolsascargadas())
-                                        Toast.makeText(getContext(), "Bolsas Completas", Toast.LENGTH_LONG).show();
+                                } else if (tipoenv.equals("BOLSA")) {
+                                    //
+                                    if (pedidos.getBolsas() != countBolsa && pedidos.getBolsas() != despd.getBolsascargadas()) {
+                                        countBolsa++;
+                                        viewCajas.setText("CAJAS: " + countCaja + " DE " + pedidos.getCajas());
+                                        viewBolsas.setText("BOLSAS: " + countBolsa + " DE " + pedidos.getBolsas());
+                                        viewQrEscaneado.setText("QR ACEPTADO");
+                                        viewQrEscaneado.setTextColor(Color.GREEN);
+                                        viajesData.updateCajaBolsaCount(opt, String.valueOf(itemid.getPedidosregistro()), "" + countBolsa, "" + countCaja);
+                                        viajesData.updateItemEscaneado(value, opt);
+
+                                    } else {
+                                        if (pedidos.getBolsas() == despd.getBolsascargadas())
+                                            Toast.makeText(getContext(), "Bolsas Completas", Toast.LENGTH_LONG).show();
+                                    }
                                 }
                             }
-                        }
-                        viewNumPedido.setText("N° Pedido: "+String.valueOf(itemid.getPedidosregistro()));
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
 
+                            viewNumPedido.setText("N° Pedido: " + String.valueOf(itemid.getPedidosregistro()));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+
+                    }else if(opt.equals("2")){
+                        /** PARA ENTREGA DE ITEMS A CLIENTE*/
+                        try {
+                            Itemsid itemid = viajesData.getItem(value);
+                            String tipoenv = itemid.getTipoitem();
+                            Viajesd despd = viajesData.getDespachod(String.valueOf(itemid.getPedidosregistro()));
+                            Pedidos pedidos = despd.getPedidos();
+
+                            if (pedidos.getCajas() == despd.getCajasentregadas() && pedidos.getBolsas() == despd.getBolsasentregadas()) {
+                                //Toast.makeText(getContext(), "Faltan items para iniciar viaje", Toast.LENGTH_LONG).show();
+                                viewNumPedido.setText("N° Pedido: " + itemid.getPedidosregistro());
+                                viewQrEscaneado.setText("PEDIDO COMPLETADO");
+                                viewQrEscaneado.setTextColor(Color.GREEN);
+                                viewCajas.setText("CAJAS: " + despd.getCajasentregadas() + " DE " + pedidos.getCajas());
+                                viewBolsas.setText("BOLSAS: " + despd.getBolsasentregadas() + " DE " + pedidos.getBolsas());
+                                return;
+                            }
+
+                            if (itemid.getEscaneadoEntregado() > 0) {
+                                //Toast.makeText(getContext(), "QR YA LEIDO..", Toast.LENGTH_LONG).show();
+                                viewNumPedido.setText("N° Pedido: " + itemid.getPedidosregistro());
+                                viewQrEscaneado.setText("QR REPETIDO");
+                                viewQrEscaneado.setTextColor(Color.RED);
+                                viewCajas.setText("CAJAS: " + despd.getCajasentregadas() + " DE " + pedidos.getCajas());
+                                viewBolsas.setText("BOLSAS: " + despd.getBolsasentregadas() + " DE " + pedidos.getBolsas());
+                                return;
+
+                            } else {
+                                /** ESCANEADO IGUAL A 0*/
+                                if (tipoenv.equals("CAJA")) {
+                                    //
+                                    if (pedidos.getCajas() != countCaja)
+                                        countCaja++;
+                                        viewCajas.setText("CAJAS: " + countCaja + " DE " + pedidos.getCajas());
+                                        viewBolsas.setText("BOLSAS: " + countBolsa + " DE " + pedidos.getBolsas());
+                                        viewQrEscaneado.setText("QR ACEPTADO");
+                                        viewQrEscaneado.setTextColor(Color.GREEN);
+                                        viajesData.updateCajaBolsaCount(opt, String.valueOf(itemid.getPedidosregistro()), "" + countBolsa, "" + countCaja);
+                                        viajesData.updateItemEscaneado(value, opt);
+
+                                } else if(tipoenv.equals("BOLSA")) {
+                                    //
+                                    if (pedidos.getBolsas() != countBolsa && pedidos.getBolsas() != despd.getBolsasentregadas()) {
+                                        countBolsa++;
+                                        viewCajas.setText("CAJAS: " + countCaja + " DE " + pedidos.getCajas());
+                                        viewBolsas.setText("BOLSAS: " + countBolsa + " DE " + pedidos.getBolsas());
+                                        viewQrEscaneado.setText("QR ACEPTADO");
+                                        viewQrEscaneado.setTextColor(Color.GREEN);
+                                        viajesData.updateCajaBolsaCount(opt, String.valueOf(itemid.getPedidosregistro()), "" + countBolsa, "" + countCaja);
+                                        viajesData.updateItemEscaneado(value, opt);
+                                    } else {
+                                        if (pedidos.getBolsas() == despd.getBolsasentregadas())
+                                            Toast.makeText(getContext(), "Bolsas Completas", Toast.LENGTH_LONG).show();
+                                    }
+                                }
+                            }
+                            viewNumPedido.setText("N° Pedido: " + String.valueOf(itemid.getPedidosregistro()));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
                 }
             });
 }

@@ -1,5 +1,5 @@
 package com.opencode.webboxdespacho.config;
 
 public enum SessionKeys {
-    data_app, isLoggedIn
+    data_app, isLoggedIn, idViaje
 }

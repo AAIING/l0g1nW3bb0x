@@ -20,6 +20,7 @@ import android.widget.Toast;
 import com.opencode.webboxdespacho.R;
 import com.opencode.webboxdespacho.config.ApiConf;
 import com.opencode.webboxdespacho.config.SessionDatos;
+import com.opencode.webboxdespacho.config.SessionKeys;
 import com.opencode.webboxdespacho.models.Viajes;
 import com.opencode.webboxdespacho.models.Viajesd;
 import com.opencode.webboxdespacho.models.Login;
@@ -170,7 +171,7 @@ public class LoginDialog extends DialogFragment {
                     }
                 }
 
-            }else{
+            }else if(opt.equals("2")){
                 String usuario = etUser.getText().toString();
                 String contrasena = etPassword.getText().toString();
                 if (!usuario.isEmpty() && !contrasena.isEmpty()) {
@@ -198,9 +199,9 @@ public class LoginDialog extends DialogFragment {
                         etUser.setVisibility(View.GONE);
                         etPassword.setVisibility(View.GONE);
                         etNumViaje.setVisibility(View.VISIBLE);
-                    }else{
+                    }else if(opt.equals("2")){
                         dismiss();
-                        String numviaje = etNumViaje.getText().toString();
+                        String numviaje = sessionDatos.getRecord().get(SessionKeys.idViaje);
                         mOnInputSelected.rspta(isLogin, opt, Integer.parseInt(numviaje));
                     }
                     progressDialog.dismiss();
@@ -227,29 +228,32 @@ public class LoginDialog extends DialogFragment {
                 if(response.isSuccessful()){
                     List<Viajes> respta = response.body();
                     try {
-                        if(listViajes.size() != 0)
-                        viajesData.borrarPedidos();
-                        viajesData.insertPedidos(respta);
-                        alertDialog.setCanceledOnTouchOutside(false);
-                        alertDialog.setTitle("Cargar Viaje");
-                        alertDialog.setMessage("Los pedidos han sido cargados..");
-                        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Aceptar", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
+
+                        if(listViajes.size() != 0) {
+                            viajesData.borrarPedidos();
+                            viajesData.insertPedidos(respta);
+                            alertDialog.setCanceledOnTouchOutside(false);
+                            alertDialog.setTitle("Cargar Viaje");
+                            alertDialog.setMessage("Los pedidos han sido cargados..");
+                            alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Aceptar", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
                                 /*
                                 MenuFragment newFragment = new MenuFragment();
                                 FragmentTransaction fm = getActivity().getSupportFragmentManager().beginTransaction();
                                 fm.replace(R.id.main_activity_frame, newFragment);
                                 fm.commit();
                                 */
-                                mOnInputSelected.rspta(isLogin,opt,numviaje);
-                                dismiss();
-                                alertDialog.dismiss();
-                            }
-                        });
-                        alertDialog.show();
-                        //sessionDatos.setIsLoggedIn();
-                        progressDialog.dismiss();
+                                    mOnInputSelected.rspta(isLogin, opt, numviaje);
+                                    dismiss();
+                                    alertDialog.dismiss();
+                                }
+                            });
+                            alertDialog.show();
+                            //sessionDatos.setIsLoggedIn();
+                            progressDialog.dismiss();
+                        }
+
                     } catch (Exception e) {
                         e.printStackTrace();
                     }

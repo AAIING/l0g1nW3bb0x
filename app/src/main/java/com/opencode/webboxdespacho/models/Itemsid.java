@@ -15,6 +15,16 @@ public class Itemsid {
 
     public int Escaneado ;
 
+    public int EscaneadoEntregado ;
+
+    public int getEscaneadoEntregado() {
+        return EscaneadoEntregado;
+    }
+
+    public void setEscaneadoEntregado(int escaneadoEntregado) {
+        EscaneadoEntregado = escaneadoEntregado;
+    }
+
     public int getEscaneado() {
         return Escaneado;
     }

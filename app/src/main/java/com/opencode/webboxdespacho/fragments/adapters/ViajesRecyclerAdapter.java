@@ -67,6 +67,12 @@ public class ViajesRecyclerAdapter extends RecyclerView.Adapter<ViajesRecyclerAd
             Drawable drawable = context.getResources().getDrawable(R.drawable.ic_baseline_green_check_24);
             holder.viewCheckCargadas.setCompoundDrawablesWithIntrinsicBounds(drawable, null, null, null);
         }
+
+
+        if(pedidos.getCajas() == item2.getCajasentregadas()){
+            Drawable drawable = context.getResources().getDrawable(R.drawable.ic_baseline_green_check_24);
+            holder.viewCheckEntregadas.setCompoundDrawablesWithIntrinsicBounds(drawable, null, null, null);
+        }
     }
 
     @Override
