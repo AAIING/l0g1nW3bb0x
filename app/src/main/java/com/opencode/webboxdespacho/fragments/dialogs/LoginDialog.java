@@ -229,34 +229,33 @@ public class LoginDialog extends DialogFragment {
                     List<Viajes> respta = response.body();
                     try {
 
-                        if(listViajes.size() != 0) {
-                            viajesData.borrarPedidos();
-                            viajesData.insertPedidos(respta);
-                            alertDialog.setCanceledOnTouchOutside(false);
-                            alertDialog.setTitle("Cargar Viaje");
-                            alertDialog.setMessage("Los pedidos han sido cargados..");
-                            alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Aceptar", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
+                        viajesData.borrarPedidos();
+                        viajesData.insertPedidos(respta);
+                        alertDialog.setCanceledOnTouchOutside(false);
+                        alertDialog.setTitle("Cargar Viaje");
+                        alertDialog.setMessage("Los pedidos han sido cargados..");
+                        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Aceptar", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
                                 /*
                                 MenuFragment newFragment = new MenuFragment();
                                 FragmentTransaction fm = getActivity().getSupportFragmentManager().beginTransaction();
                                 fm.replace(R.id.main_activity_frame, newFragment);
                                 fm.commit();
                                 */
-                                    mOnInputSelected.rspta(isLogin, opt, numviaje);
-                                    dismiss();
-                                    alertDialog.dismiss();
-                                }
-                            });
-                            alertDialog.show();
-                            //sessionDatos.setIsLoggedIn();
-                            progressDialog.dismiss();
-                        }
+                                mOnInputSelected.rspta(isLogin, opt, numviaje);
+                                dismiss();
+                                alertDialog.dismiss();
+                            }
+                        });
+                        alertDialog.show();
+                        //sessionDatos.setIsLoggedIn();
+                        progressDialog.dismiss();
 
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
+
                 }else{
                     progressDialog.dismiss();
                     Toast.makeText(getContext(),"NUMERO DE VIAJE NO EXISTE", Toast.LENGTH_LONG).show();
