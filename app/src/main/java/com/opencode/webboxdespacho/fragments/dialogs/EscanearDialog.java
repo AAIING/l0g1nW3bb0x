@@ -73,13 +73,13 @@ public class EscanearDialog extends DialogFragment {
         }
     }
 
-    private int countCaja =0, countBolsa =0; //, countCajaEntregada =0, countBolsaEntregada =0
+    private int countCaja =0, countBolsa =0;
     private TextView viewBolsas, viewCajas, viewNumPedido, viewQrEscaneado;
     private Button btnEscan, btnClose;
     private ScanOptions options;
     private ViajesData viajesData;
     private List<Viajesd> listDespachosd;
-    private String opt = "1";
+    private String opt="1", numpedido="", nomcliente="";
     private Handler handler = new Handler();
     private Runnable runnable;
 
@@ -103,9 +103,14 @@ public class EscanearDialog extends DialogFragment {
         viewCajas = view.findViewById(R.id.view_num_cajas);
         viewNumPedido = view.findViewById(R.id.view_num_pedido_escan);
         viewQrEscaneado = view.findViewById(R.id.view_qr_msje_escan);
-
+        viewNumPedido = view.findViewById(R.id.view_num_pedido_escan);
         if(getArguments() != null){
             opt = getArguments().getString("OPT");
+            if(opt.equals("2")) {
+                numpedido = getArguments().getString("NUMPEDIDO");
+                nomcliente = getArguments().getString("NOMCLIENTE");
+                viewNumPedido.setText("N° Pedido: " + numpedido +"\n"+"\n"+"Cliente: "+nomcliente);
+            }
         }
 
         return view;
@@ -131,6 +136,7 @@ public class EscanearDialog extends DialogFragment {
                 if(result.getContents() != null) {
                     //
                     String value = result.getContents();
+
                     if(opt.equals("1")) {
                         /** PARA SUBIDA DE ITEMS AL FURGON*/
                         try {
@@ -148,8 +154,8 @@ public class EscanearDialog extends DialogFragment {
                                     //
                                     if (pedidos.getCajas() == despd.getCajascargadas() && pedidos.getBolsas() == despd.getBolsascargadas()) {
                                         viewNumPedido.setText("N° Pedido: " + itemid.getPedidosregistro());
-                                        viewQrEscaneado.setText("PEDIDO COMPLETADO");
-                                        viewQrEscaneado.setTextColor(Color.GREEN);
+                                        viewQrEscaneado.setText("EL PEDIDO YA ESTA CARGADO");
+                                        viewQrEscaneado.setTextColor(Color.RED);
                                         viewCajas.setText("CAJAS: " + despd.getCajascargadas() + " DE " + pedidos.getCajas());
                                         viewBolsas.setText("BOLSAS: " + despd.getBolsascargadas() + " DE " + pedidos.getBolsas());
                                         return;
@@ -171,6 +177,7 @@ public class EscanearDialog extends DialogFragment {
                                 if (tipoenv.equals("CAJA")) {
                                     //
                                     if (pedidos.getCajas() != countCaja)
+                                        if(pedidos.getCajas() > 0)
                                         countCaja++;
                                         viewCajas.setText("CAJAS: " + countCaja + " DE " + pedidos.getCajas());
                                         viewBolsas.setText("BOLSAS: " + countBolsa + " DE " + pedidos.getBolsas());
@@ -182,6 +189,7 @@ public class EscanearDialog extends DialogFragment {
                                 } else if (tipoenv.equals("BOLSA")) {
                                     //
                                     if (pedidos.getBolsas() != countBolsa && pedidos.getBolsas() != despd.getBolsascargadas()) {
+                                        if(pedidos.getBolsas() > 0)
                                         countBolsa++;
                                         viewCajas.setText("CAJAS: " + countCaja + " DE " + pedidos.getCajas());
                                         viewBolsas.setText("BOLSAS: " + countBolsa + " DE " + pedidos.getBolsas());
@@ -196,7 +204,6 @@ public class EscanearDialog extends DialogFragment {
                                     }
                                 }
                             }
-
                             viewNumPedido.setText("N° Pedido: " + String.valueOf(itemid.getPedidosregistro()));
                         } catch (Exception e) {
                             e.printStackTrace();
@@ -210,15 +217,29 @@ public class EscanearDialog extends DialogFragment {
                             Viajesd despd = viajesData.getDespachod(String.valueOf(itemid.getPedidosregistro()));
                             Pedidos pedidos = despd.getPedidos();
 
-                            if (pedidos.getCajas() == despd.getCajasentregadas() && pedidos.getBolsas() == despd.getBolsasentregadas()) {
-                                //Toast.makeText(getContext(), "Faltan items para iniciar viaje", Toast.LENGTH_LONG).show();
-                                viewNumPedido.setText("N° Pedido: " + itemid.getPedidosregistro());
-                                viewQrEscaneado.setText("PEDIDO COMPLETADO");
-                                viewQrEscaneado.setTextColor(Color.GREEN);
-                                viewCajas.setText("CAJAS: " + despd.getCajasentregadas() + " DE " + pedidos.getCajas());
-                                viewBolsas.setText("BOLSAS: " + despd.getBolsasentregadas() + " DE " + pedidos.getBolsas());
+                            if(!String.valueOf(itemid.getPedidosregistro()).equals(numpedido)){
+                                viewQrEscaneado.setText("QR NO CORRESPONDE AL PEDIDO");
+                                viewQrEscaneado.setTextColor(Color.RED);
                                 return;
                             }
+
+                            handler.removeCallbacks(runnable);
+                            runnable = new Runnable() {
+                                @Override
+                                public void run() {
+                                    handler.postDelayed(this, 1000);
+                                    //
+                                    if (pedidos.getCajas() == despd.getCajasentregadas() && pedidos.getBolsas() == despd.getBolsasentregadas()) {
+                                        viewNumPedido.setText("N° Pedido: " + itemid.getPedidosregistro());
+                                        viewQrEscaneado.setText("EL PEDIDO YA ESTA CARGADO");
+                                        viewQrEscaneado.setTextColor(Color.RED);
+                                        viewCajas.setText("CAJAS: " + despd.getCajasentregadas() + " DE " + pedidos.getCajas());
+                                        viewBolsas.setText("BOLSAS: " + despd.getBolsasentregadas() + " DE " + pedidos.getBolsas());
+                                        return;
+                                    }
+                                }
+                            };
+                            handler.postDelayed(runnable, 0);
 
                             if (itemid.getEscaneadoEntregado() > 0) {
                                 //Toast.makeText(getContext(), "QR YA LEIDO..", Toast.LENGTH_LONG).show();
@@ -245,6 +266,7 @@ public class EscanearDialog extends DialogFragment {
                                 } else if(tipoenv.equals("BOLSA")) {
                                     //
                                     if (pedidos.getBolsas() != countBolsa && pedidos.getBolsas() != despd.getBolsasentregadas()) {
+                                        if(pedidos.getBolsas() > 0)
                                         countBolsa++;
                                         viewCajas.setText("CAJAS: " + countCaja + " DE " + pedidos.getCajas());
                                         viewBolsas.setText("BOLSAS: " + countBolsa + " DE " + pedidos.getBolsas());
@@ -252,6 +274,7 @@ public class EscanearDialog extends DialogFragment {
                                         viewQrEscaneado.setTextColor(Color.GREEN);
                                         viajesData.updateCajaBolsaCount(opt, String.valueOf(itemid.getPedidosregistro()), "" + countBolsa, "" + countCaja);
                                         viajesData.updateItemEscaneado(value, opt);
+
                                     } else {
                                         if (pedidos.getBolsas() == despd.getBolsasentregadas())
                                             Toast.makeText(getContext(), "Bolsas Completas", Toast.LENGTH_LONG).show();

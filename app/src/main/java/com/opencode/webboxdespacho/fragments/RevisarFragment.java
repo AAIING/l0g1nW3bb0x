@@ -18,6 +18,7 @@ import android.widget.TextView;
 
 import com.opencode.webboxdespacho.R;
 import com.opencode.webboxdespacho.fragments.adapters.ViajesRecyclerAdapter;
+import com.opencode.webboxdespacho.fragments.dialogs.EscanearDialog;
 import com.opencode.webboxdespacho.fragments.dialogs.VerPedidoDialog;
 import com.opencode.webboxdespacho.models.Viajes;
 import com.opencode.webboxdespacho.models.Viajesd;
@@ -65,7 +66,8 @@ public class RevisarFragment extends Fragment {
         return fragment;
     }
 
-    private TextView viewIconCargarViaje, viewTotalPedidos, viewMenu, viewBack;
+    private TextView viewIconCargarViaje, viewTotalPedidos, viewMenu, viewBack, viewIconCarga,
+            viewIconEntrega, viewTitulo;
     private AlertDialog alertDialog;
     private ViajesData viajesData;
     private int viajesOptions = 2; //CAMBIAR A 1
@@ -73,7 +75,7 @@ public class RevisarFragment extends Fragment {
     private List<Viajesd> listViajesd = new ArrayList<>();
     private RecyclerView recyclerView;
     private ViajesRecyclerAdapter viajesRecyclerAdapter;
-    //
+    private String opt="1";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -98,6 +100,18 @@ public class RevisarFragment extends Fragment {
         viewTotalPedidos.setVisibility(View.GONE);
         viewBack = view.findViewById(R.id.view_menu_backnav);
         viewBack.setOnClickListener(onClickBack);
+        viewIconCarga = view.findViewById(R.id.view_icon_carga);
+        viewIconEntrega = view.findViewById(R.id.view_icon_entrega);
+        viewTitulo = view.findViewById(R.id.view_menu_titulo);
+        //
+        if(getArguments() != null){
+            opt = getArguments().getString("OPT");
+            if(opt.equals("2")) {
+                viewIconCarga.setVisibility(View.GONE);
+                viewIconEntrega.setVisibility(View.GONE);
+                viewTitulo.setText("Entregar Pedido");
+            }
+        }
         //
         try {
             listViajes = viajesData.getDespachos();
@@ -119,7 +133,7 @@ public class RevisarFragment extends Fragment {
         //
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        viajesRecyclerAdapter = new ViajesRecyclerAdapter(getContext(), listViajesd);
+        viajesRecyclerAdapter = new ViajesRecyclerAdapter(getContext(), listViajesd, opt);
         recyclerView.setAdapter(viajesRecyclerAdapter);
         viajesRecyclerAdapter.setOnClickListener(new ViajesRecyclerAdapter.OnClickListener() {
             @Override
@@ -140,24 +154,22 @@ public class RevisarFragment extends Fragment {
                 newFragment.setTargetFragment(RevisarFragment.this, 1);
                 newFragment.show(getFragmentManager(), "Dialog");
 
-                /*
-                String msje = "Dirección Despacho: "+pedidos.getDireccionenvio() + "\n" ;
-                       msje +="Comuna: "+pedidos.getComunaenvio() + "\n" ;
-                       msje +="Condominio: "+pedidos.getCondominioenvio() + "\n" ;
-                       msje +="Cajas: "+pedidos.getCajas() + "\n";
-                       msje +="Bolsas: "+pedidos.getBolsas();
+            }
 
-                alertDialog.setCanceledOnTouchOutside(false);
-                alertDialog.setTitle("Ver Pedido");
-                alertDialog.setMessage(msje);
-                alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Aceptar", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        alertDialog.dismiss();
-                    }
-                });
-                alertDialog.show();
-*/
+            @Override
+            public void onEntregarPedido(View view, int position) {
+                Viajesd item2 = listViajesd.get(position);
+                Pedidos pedidos = item2.getPedidos();
+                EscanearDialog newFragment = new EscanearDialog();
+                Bundle bundle = new Bundle();
+                bundle.putString("OPT", "2");
+                bundle.putString("NUMPEDIDO", String.valueOf(pedidos.getRegistro()));
+                bundle.putString("NOMCLIENTE", pedidos.getCliente());
+                newFragment.setArguments(bundle);
+                newFragment.setTargetFragment(RevisarFragment.this, 1);
+                newFragment.show(getFragmentManager(), "EscanearDialog");
+
+
             }
         });
     }

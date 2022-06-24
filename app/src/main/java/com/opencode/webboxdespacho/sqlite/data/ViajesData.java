@@ -260,18 +260,16 @@ public class ViajesData {
                                     item_viaje.Estado
                             });
                 /***/
-                for(Viajesd item : item_viaje.getViajesd())
+                for(Viajesd item: item_viaje.getViajesd())
                 {
-                    String query = "INSERT INTO VIAJESD ( " + //CAJAS, BOLSAS,
+                    String query = "INSERT INTO VIAJESD ( " +
                             "NROVIAJE, PEDIDO, CAJASCARGADAS, BOLSASCARGADAS, CAJASENTREGADAS, BOLSASENTREGADAS) " +
-                            "VALUES (?, ?, ?, ?, ?, ?);"; //, ?, ?
+                            "VALUES (?, ?, ?, ?, ?, ?);";
                     db.execSQL(
                             query,
                             new Object[]{
                                     item.Nroviaje,
                                     item.Pedido,
-                                    //item.Cajas,
-                                    //item.Bolsas,
                                     item.Cajascargadas,
                                     item.Bolsascargadas,
                                     item.Cajasentregadas,

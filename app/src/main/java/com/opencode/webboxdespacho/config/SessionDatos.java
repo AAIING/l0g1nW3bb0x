@@ -21,11 +21,13 @@ public class SessionDatos {
     public HashMap<SessionKeys, String> getRecord(){
         HashMap<SessionKeys, String> map = new HashMap<>();
         map.put(SessionKeys.idViaje, preferences.getString(SessionKeys.idViaje.name(), "0"));
+        map.put(SessionKeys.estadoViaje, preferences.getString(SessionKeys.estadoViaje.name(), "0"));
         return  map;
     }
 
-    public void setIdViaje(String id){
+    public void setIdViaje(String id, String estado){
         editor.putString(SessionKeys.idViaje.name(), id);
+        editor.putString(SessionKeys.estadoViaje.name(), estado);
         editor.commit();
     }
 

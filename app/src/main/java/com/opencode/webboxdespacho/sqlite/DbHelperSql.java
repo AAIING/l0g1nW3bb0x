@@ -8,7 +8,7 @@ import androidx.annotation.Nullable;
 
 public class DbHelperSql extends SQLiteOpenHelper {
 
-    private static final String DATABASE_NAME = "DbPedidos.db";
+    private static final String DATABASE_NAME = "DbViajes.db";
     private static final int DATABASE_VERSION = 1;
 
     public DbHelperSql(@Nullable Context context) {
@@ -17,10 +17,10 @@ public class DbHelperSql extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        db.execSQL(CREAR_TABLA_ITEMSID);
         db.execSQL(CREAR_TABLA_VIAJES);
         db.execSQL(CREAR_TABLA_VIAJESD);
         db.execSQL(CREAR_TABLA_PEDIDOS);
+        db.execSQL(CREAR_TABLA_ITEMSID);
     }
 
     @Override
@@ -52,8 +52,6 @@ public class DbHelperSql extends SQLiteOpenHelper {
             "ID_DESPACHOSD      INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,  " +
             "NROVIAJE           INTEGER NOT NULL, " +
             "PEDIDO             INTEGER NOT NULL, " +
-            //"CAJAS              INTEGER NOT NULL, " +
-            //"BOLSAS             INTEGER NOT NULL, " +
             "CAJASCARGADAS      INTEGER NOT NULL, " +
             "BOLSASCARGADAS     INTEGER NOT NULL, " +
             "CAJASENTREGADAS    INTEGER NOT NULL, " +

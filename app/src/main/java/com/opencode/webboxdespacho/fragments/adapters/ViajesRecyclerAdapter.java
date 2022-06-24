@@ -19,24 +19,24 @@ import com.opencode.webboxdespacho.models.Pedidos;
 import java.util.List;
 
 public class ViajesRecyclerAdapter extends RecyclerView.Adapter<ViajesRecyclerAdapter.ViewHolder>{
-
     private Context context;
-    //private List<Viajes> listViajes;
     private List<Viajesd> listViajesd;
-
+    private String opt;
     private OnClickListener onClickListener = null;
 
     public interface OnClickListener {
         void onVerPedido(View view, int position);
+        void onEntregarPedido(View view, int position);
     }
 
     public void setOnClickListener(OnClickListener onClickListener) {
         this.onClickListener = onClickListener;
     }
 
-    public ViajesRecyclerAdapter(Context context, List<Viajesd> listViajesd) {
+    public ViajesRecyclerAdapter(Context context, List<Viajesd> listViajesd, String opt) {
         this.context = context;
         this.listViajesd = listViajesd;
+        this.opt = opt;
     }
 
     @NonNull
@@ -52,6 +52,35 @@ public class ViajesRecyclerAdapter extends RecyclerView.Adapter<ViajesRecyclerAd
         Viajesd item2 = listViajesd.get(holder.getAdapterPosition());
         Pedidos pedidos = item2.getPedidos();
 
+        if(opt.equals("2")){
+            //holder.viewCheckCargadas.setVisibility(View.GONE);
+            Drawable drawable = context.getResources().getDrawable(R.drawable.ic_white_delivery_dining_24);
+            holder.viewCheckCargadas.setCompoundDrawablesWithIntrinsicBounds(drawable, null, null, null);
+            holder.viewCheckCargadas.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if(onClickListener == null) return;
+                    onClickListener.onEntregarPedido(view, position);
+                }
+            });
+
+            if(pedidos.getCajas() == item2.getCajasentregadas()){
+                Drawable drawable2 = context.getResources().getDrawable(R.drawable.ic_baseline_green_check_24);
+                holder.viewCheckEntregadas.setCompoundDrawablesWithIntrinsicBounds(drawable2, null, null, null);
+            }
+        }
+        else if(opt.equals("1"))
+        {
+            if(pedidos.getCajas() == item2.getCajascargadas()){
+                Drawable drawable = context.getResources().getDrawable(R.drawable.ic_baseline_green_check_24);
+                holder.viewCheckCargadas.setCompoundDrawablesWithIntrinsicBounds(drawable, null, null, null);
+            }
+            if(pedidos.getCajas() == item2.getCajasentregadas()){
+                Drawable drawable = context.getResources().getDrawable(R.drawable.ic_baseline_green_check_24);
+                holder.viewCheckEntregadas.setCompoundDrawablesWithIntrinsicBounds(drawable, null, null, null);
+            }
+        }
+
         holder.viewVerPedido.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -62,17 +91,6 @@ public class ViajesRecyclerAdapter extends RecyclerView.Adapter<ViajesRecyclerAd
 
         holder.viewNumPedido.setText(String.valueOf(item2.getPedido()));
         holder.viewNombreCliente.setText(pedidos.getCliente());
-
-        if(pedidos.getCajas() == item2.getCajascargadas()){
-            Drawable drawable = context.getResources().getDrawable(R.drawable.ic_baseline_green_check_24);
-            holder.viewCheckCargadas.setCompoundDrawablesWithIntrinsicBounds(drawable, null, null, null);
-        }
-
-
-        if(pedidos.getCajas() == item2.getCajasentregadas()){
-            Drawable drawable = context.getResources().getDrawable(R.drawable.ic_baseline_green_check_24);
-            holder.viewCheckEntregadas.setCompoundDrawablesWithIntrinsicBounds(drawable, null, null, null);
-        }
     }
 
     @Override

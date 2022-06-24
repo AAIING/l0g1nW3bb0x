@@ -23,6 +23,12 @@ public class Viajes {
     @Expose
     public List<Viajesd> Viajesd ;
 
+    /// <summary>
+    /// 0:cargando  0:en viaje  5: cerrado
+    /// </summary>
+    @SerializedName("Estado")
+    public short Estado ;
+
     public List<Viajesd> getViajesd() {
         return Viajesd;
     }
@@ -40,12 +46,6 @@ public class Viajes {
     public void setIdViaje(int idViaje) {
         this.idViaje = idViaje;
     }
-
-    /// <summary>
-    /// 0:cargando  0:en viaje  5: cerrado
-    /// </summary>
-    @SerializedName("Estado")
-    public short Estado ;
 
     public String getFecha() {
         return Fecha;

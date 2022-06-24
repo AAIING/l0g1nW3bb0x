@@ -170,12 +170,30 @@ public class MenuFragment extends Fragment implements LoginDialog.OnInputSelecte
     private View.OnClickListener onClickEntregaPedido = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-            EscanearDialog newFragment = new EscanearDialog();
-            Bundle bundle = new Bundle();
-            bundle.putString("OPT", "2");
-            newFragment.setArguments(bundle);
-            newFragment.setTargetFragment(MenuFragment.this, 1);
-            newFragment.show(getFragmentManager(), "EscanearDialog");
+            //5=INICIA VIAJE
+            if(sessionDatos.getRecord().get(SessionKeys.estadoViaje).equals("5")) {
+                ((AppCompatActivity) getActivity()).getSupportActionBar().hide();
+                RevisarFragment newFragment = new RevisarFragment();
+                Bundle bundle = new Bundle();
+                bundle.putString("OPT", "2");
+                newFragment.setArguments(bundle);
+                FragmentTransaction fm = getActivity().getSupportFragmentManager().beginTransaction();
+                fm.replace(R.id.main_activity_frame, newFragment);
+                fm.commit();
+            }else{
+
+                alertDialog.setCanceledOnTouchOutside(false);
+                alertDialog.setTitle("No has iniciado viaje");
+                alertDialog.setMessage("Para entregar debes iniciar viaje");
+                alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Aceptar", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        alertDialog.dismiss();
+                    }
+                });
+                alertDialog.show();
+
+            }
         }
     };
 
@@ -207,8 +225,8 @@ public class MenuFragment extends Fragment implements LoginDialog.OnInputSelecte
                 e.printStackTrace();
             }
             //LA SUMA DE TODAS LAS CAJAS Y BOLSAS
-            //Log.e("TAG", "TOTAL "+(count_total)+" DESPACHADOS " +(count_despacho));
-            if(count_total  == count_despacho) {
+            Log.e("TAG", "TOTAL "+(count_total)+" DESPACHADOS " +(count_despacho));
+            if(count_total  == count_despacho){
                 alertDialog.setCanceledOnTouchOutside(false);
                 alertDialog.setTitle("Iniciar Viaje");
                 alertDialog.setMessage("¿Desea iniciar viaje?");
@@ -264,12 +282,13 @@ public class MenuFragment extends Fragment implements LoginDialog.OnInputSelecte
         //ESTADO:5=INICIA,9=FIN
         /***/
         if(opt.equals("1")){
-            sessionDatos.setIdViaje(String.valueOf(numviaje));
+            sessionDatos.setIdViaje(String.valueOf(numviaje), "0");
             //
         } else if(opt.equals("2")){
             try {
                 viajesData.updateEstadoViaje(String.valueOf(numviaje), "5");
                 putEstadoViaje(numviaje, 5);
+                sessionDatos.setIdViaje(String.valueOf(numviaje), "5");
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -277,6 +296,7 @@ public class MenuFragment extends Fragment implements LoginDialog.OnInputSelecte
             try {
                 viajesData.updateEstadoViaje(String.valueOf(numviaje), "9");
                 putEstadoViaje(numviaje, 9);
+                sessionDatos.setIdViaje(String.valueOf(numviaje), "9");
             } catch (Exception e) {
                 e.printStackTrace();
             }

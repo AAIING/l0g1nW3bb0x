@@ -154,7 +154,7 @@ public class LoginDialog extends DialogFragment {
                     String contrasena = etPassword.getText().toString();
                     if (!usuario.isEmpty() && !contrasena.isEmpty()) {
                         progressDialog.show();
-                        progressDialog.setMessage("Sincronizando..");
+                        progressDialog.setMessage("Comprobando usuario..");
                         login(usuario, contrasena);
                     } else {
                         Toast.makeText(getContext(), "Faltan parametro(s)", Toast.LENGTH_SHORT).show();
@@ -164,14 +164,25 @@ public class LoginDialog extends DialogFragment {
                     String numviaje = etNumViaje.getText().toString();
                     if (!numviaje.isEmpty()) {
                         progressDialog.show();
-                        progressDialog.setMessage("Cargando viaje..");
+                        progressDialog.setMessage("Sincronizando datos..");
                         cargarViaje(Integer.parseInt(numviaje));
                     } else {
                         Toast.makeText(getContext(), "Faltan parametro(s)", Toast.LENGTH_SHORT).show();
                     }
                 }
-
+                //
             }else if(opt.equals("2")){
+                String usuario = etUser.getText().toString();
+                String contrasena = etPassword.getText().toString();
+                if (!usuario.isEmpty() && !contrasena.isEmpty()) {
+                    progressDialog.show();
+                    progressDialog.setMessage("Sincronizando..");
+                    login(usuario, contrasena);
+                } else {
+                    Toast.makeText(getContext(), "Faltan parametro(s)", Toast.LENGTH_SHORT).show();
+                }
+                //
+            }else if(opt.equals("3")){
                 String usuario = etUser.getText().toString();
                 String contrasena = etPassword.getText().toString();
                 if (!usuario.isEmpty() && !contrasena.isEmpty()) {
@@ -194,12 +205,16 @@ public class LoginDialog extends DialogFragment {
                 if(response.isSuccessful()){
                     Login login = response.body();
                     isLogin = true;
-                    if(opt.equals("1")) {
+                    if(opt.equals("1")) { //SINCRONIZAR DATOS
                         btnLogin.setText("Cargar Viaje");
                         etUser.setVisibility(View.GONE);
                         etPassword.setVisibility(View.GONE);
                         etNumViaje.setVisibility(View.VISIBLE);
-                    }else if(opt.equals("2")){
+                    }else if(opt.equals("2")){ //INICIAR VIAJE
+                        dismiss();
+                        String numviaje = sessionDatos.getRecord().get(SessionKeys.idViaje);
+                        mOnInputSelected.rspta(isLogin, opt, Integer.parseInt(numviaje));
+                    }else if(opt.equals("3")){ //FINALIZAR VIAJE
                         dismiss();
                         String numviaje = sessionDatos.getRecord().get(SessionKeys.idViaje);
                         mOnInputSelected.rspta(isLogin, opt, Integer.parseInt(numviaje));
@@ -224,12 +239,12 @@ public class LoginDialog extends DialogFragment {
         call.enqueue(new Callback<List<Viajes>>() {
             @Override
             public void onResponse(Call<List<Viajes>> call, Response<List<Viajes>> response) {
-                //
                 if(response.isSuccessful()){
                     List<Viajes> respta = response.body();
                     try {
-
+                        if(listViajes.size() > 0)
                         viajesData.borrarPedidos();
+
                         viajesData.insertPedidos(respta);
                         alertDialog.setCanceledOnTouchOutside(false);
                         alertDialog.setTitle("Cargar Viaje");
@@ -237,19 +252,13 @@ public class LoginDialog extends DialogFragment {
                         alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Aceptar", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                /*
-                                MenuFragment newFragment = new MenuFragment();
-                                FragmentTransaction fm = getActivity().getSupportFragmentManager().beginTransaction();
-                                fm.replace(R.id.main_activity_frame, newFragment);
-                                fm.commit();
-                                */
+                                //
                                 mOnInputSelected.rspta(isLogin, opt, numviaje);
                                 dismiss();
                                 alertDialog.dismiss();
                             }
                         });
                         alertDialog.show();
-                        //sessionDatos.setIsLoggedIn();
                         progressDialog.dismiss();
 
                     } catch (Exception e) {
