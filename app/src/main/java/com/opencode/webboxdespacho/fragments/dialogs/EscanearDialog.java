@@ -136,11 +136,9 @@ public class EscanearDialog extends DialogFragment {
                 if(result.getContents() != null) {
                     //
                     String value = result.getContents();
-
                     if(opt.equals("1")) {
                         /** PARA SUBIDA DE ITEMS AL FURGON*/
                         try {
-
                             Itemsid itemid = viajesData.getItem(value);
                             String tipoenv = itemid.getTipoitem();
                             Viajesd despd = viajesData.getDespachod(String.valueOf(itemid.getPedidosregistro()));
@@ -256,6 +254,7 @@ public class EscanearDialog extends DialogFragment {
                                     //
                                     if (pedidos.getCajas() != countCaja)
                                         countCaja++;
+
                                         viewCajas.setText("CAJAS: " + countCaja + " DE " + pedidos.getCajas());
                                         viewBolsas.setText("BOLSAS: " + countBolsa + " DE " + pedidos.getBolsas());
                                         viewQrEscaneado.setText("QR ACEPTADO");
@@ -268,6 +267,7 @@ public class EscanearDialog extends DialogFragment {
                                     if (pedidos.getBolsas() != countBolsa && pedidos.getBolsas() != despd.getBolsasentregadas()) {
                                         if(pedidos.getBolsas() > 0)
                                         countBolsa++;
+
                                         viewCajas.setText("CAJAS: " + countCaja + " DE " + pedidos.getCajas());
                                         viewBolsas.setText("BOLSAS: " + countBolsa + " DE " + pedidos.getBolsas());
                                         viewQrEscaneado.setText("QR ACEPTADO");
