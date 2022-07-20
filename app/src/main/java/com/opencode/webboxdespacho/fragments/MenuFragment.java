@@ -1,6 +1,7 @@
 package com.opencode.webboxdespacho.fragments;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 
@@ -8,6 +9,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
+import android.os.Handler;
+import android.util.ArrayMap;
+import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,16 +24,24 @@ import com.opencode.webboxdespacho.R;
 import com.opencode.webboxdespacho.config.ApiConf;
 import com.opencode.webboxdespacho.config.SessionDatos;
 import com.opencode.webboxdespacho.config.SessionKeys;
+import com.opencode.webboxdespacho.config.Tools;
 import com.opencode.webboxdespacho.fragments.dialogs.EscanearDialog;
 import com.opencode.webboxdespacho.fragments.dialogs.LoginDialog;
+import com.opencode.webboxdespacho.models.Fotos;
 import com.opencode.webboxdespacho.models.Pedidos;
 import com.opencode.webboxdespacho.models.Viajes;
 import com.opencode.webboxdespacho.models.Viajesd;
 import com.opencode.webboxdespacho.sqlite.data.ViajesData;
 
+import org.json.JSONObject;
+
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+import okhttp3.MediaType;
+import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -86,16 +98,21 @@ public class MenuFragment extends Fragment implements LoginDialog.OnInputSelecte
     private ViajesData viajesData;
     private List<Viajes> listViajes = new ArrayList<>();
     private int numviaje=0, count_total=0, count_despacho=0;
-    private LinearLayout linearViajeSync;
     private SessionDatos sessionDatos;
+    private ProgressDialog progressDialog;
+    private Tools tools;
+    private Handler handler = new Handler();
+    private Runnable runnable;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view  = inflater.inflate(R.layout.fragment_menu, container, false);
+        tools = new Tools(getContext());
         sessionDatos = new SessionDatos(getContext());
         viajesData = new ViajesData(getContext());
+        progressDialog = new ProgressDialog(getContext());
         try {
             listViajes = viajesData.getDespachos();
             if(listViajes.size() > 0){
@@ -119,51 +136,87 @@ public class MenuFragment extends Fragment implements LoginDialog.OnInputSelecte
         btnEntregaPedido.setOnClickListener(onClickEntregaPedido);
         btnFinViaje = view.findViewById(R.id.btn_finalizar_viaje);
         btnFinViaje.setOnClickListener(onClickFinViaje);
-        linearViajeSync = view.findViewById(R.id.linear_viaje_sync);
         return view;
     }
 
     private View.OnClickListener onClickFinViaje = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-            count_total =0;
-            count_despacho =0;
-            for(Viajes viajes: listViajes){
-                List<Viajesd> viajesd = viajes.getViajesd();
-                //
-                for(Viajesd viajesd1: viajesd){
-                    Pedidos pedidos = viajesd1.getPedidos();
-                    count_total += pedidos.getCajas() + pedidos.getBolsas();
-                    count_despacho += viajesd1.getCajasentregadas() + viajesd1.getBolsasentregadas();
+            /***/
+            new Tools.InternetCheck(getActivity(), new Tools.InternetCheck.Consumer(){
+                @Override
+                public void accept(Boolean internet) {
+                    if(internet){
+                        try {
+                            count_total =0;
+                            count_despacho =0;
+                            if(listViajes.size() == 0){
+                                sessionDatos.setIdViaje(String.valueOf(0), "0");
+                            }
+                            for(Viajes viajes: listViajes){
+                                List<Viajesd> viajesd = viajes.getViajesd();
+                                for(Viajesd viajesd1: viajesd){
+                                    Pedidos pedidos = viajesd1.getPedidos();
+                                    count_total += pedidos.getCajas() + pedidos.getBolsas();
+                                    count_despacho += viajesd1.getCajasentregadas() + viajesd1.getBolsasentregadas();
+                                }
+                            }
+                            if(count_total == count_despacho && sessionDatos.getRecord().get(SessionKeys.estadoViaje).equals("5")){
+                                alertDialog.setCanceledOnTouchOutside(false);
+                                alertDialog.setTitle("Finalizar Viaje");
+                                alertDialog.setMessage("¿Desea finalizar viaje?");
+                                alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Aceptar", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        alertDialog.dismiss();
+                                        LoginDialog newFragment = new LoginDialog();
+                                        Bundle bundle = new Bundle();
+                                        bundle.putString("OPT", "3");
+                                        newFragment.setArguments(bundle);
+                                        newFragment.setTargetFragment(MenuFragment.this, 1);
+                                        newFragment.show(getFragmentManager(), "Dialog");
+                                    }
+                                });
+                                alertDialog.show();
+                                //
+                            }else{
+
+                                String msg ="Faltan items por entregar";
+                                if(sessionDatos.getRecord().get(SessionKeys.estadoViaje).equals("0")){
+                                    msg="Aun no has cargado e iniciado un viaje";
+                                } else if(sessionDatos.getRecord().get(SessionKeys.estadoViaje).equals("9")){
+                                    msg ="El Viaje ya esta cerrado";
+                                }
+                                alertDialog.setCanceledOnTouchOutside(false);
+                                alertDialog.setTitle("No puedes finalizar el viaje");
+                                alertDialog.setMessage(msg);
+                                alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Aceptar", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        alertDialog.dismiss();
+                                    }
+                                });
+                                alertDialog.show();
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        //
+                    } else {
+                        /***/
+                        alertDialog.setCanceledOnTouchOutside(false);
+                        alertDialog.setTitle("Sin Conexión");
+                        alertDialog.setMessage("Para finalizar el viaje se necesita estar conectado..");
+                        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Aceptar", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                alertDialog.dismiss();
+                            }
+                        });
+                        alertDialog.show();
+                    }
                 }
-            }
-            if(count_total == count_despacho){
-                alertDialog.setCanceledOnTouchOutside(false);
-                alertDialog.setTitle("Finalizar Viaje");
-                alertDialog.setMessage("¿Desea finalizar viaje?");
-                alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Aceptar", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        alertDialog.dismiss();
-                        LoginDialog newFragment = new LoginDialog();
-                        Bundle bundle = new Bundle();
-                        bundle.putString("OPT", "3");
-                        newFragment.setArguments(bundle);
-                        newFragment.setTargetFragment(MenuFragment.this, 1);
-                        newFragment.show(getFragmentManager(), "Dialog");
-                    }
-                });
-                alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Volver", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        alertDialog.dismiss();
-                    }
-                });
-                alertDialog.show();
-                //
-            }else{
-                Toast.makeText(getContext(), "Faltan items para finalizar viaje", Toast.LENGTH_LONG).show();
-            }
+            });
         }
     };
 
@@ -171,9 +224,9 @@ public class MenuFragment extends Fragment implements LoginDialog.OnInputSelecte
         @Override
         public void onClick(View view) {
             //5=INICIA VIAJE
-            if(sessionDatos.getRecord().get(SessionKeys.estadoViaje).equals("5")) {
+            if(sessionDatos.getRecord().get(SessionKeys.estadoViaje).equals("5") && listViajes.size() > 0) {
                 ((AppCompatActivity) getActivity()).getSupportActionBar().hide();
-                RevisarFragment newFragment = new RevisarFragment();
+                PedidosFragment newFragment = new PedidosFragment();
                 Bundle bundle = new Bundle();
                 bundle.putString("OPT", "2");
                 newFragment.setArguments(bundle);
@@ -181,7 +234,6 @@ public class MenuFragment extends Fragment implements LoginDialog.OnInputSelecte
                 fm.replace(R.id.main_activity_frame, newFragment);
                 fm.commit();
             }else{
-
                 alertDialog.setCanceledOnTouchOutside(false);
                 alertDialog.setTitle("No has iniciado viaje");
                 alertDialog.setMessage("Para entregar debes iniciar viaje");
@@ -192,7 +244,6 @@ public class MenuFragment extends Fragment implements LoginDialog.OnInputSelecte
                     }
                 });
                 alertDialog.show();
-
             }
         }
     };
@@ -209,10 +260,14 @@ public class MenuFragment extends Fragment implements LoginDialog.OnInputSelecte
     private View.OnClickListener onClickIniciarViaje = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
+            //
             count_total =0;
             count_despacho =0;
             try {
                 listViajes = viajesData.getDespachos();
+                if(listViajes.size() == 0){
+                    sessionDatos.setIdViaje(String.valueOf(0), "0");
+                }
                 for(Viajes viajes: listViajes){
                     List<Viajesd> viajesd = viajes.getViajesd();
                     for(Viajesd viajesd1: viajesd){
@@ -225,8 +280,9 @@ public class MenuFragment extends Fragment implements LoginDialog.OnInputSelecte
                 e.printStackTrace();
             }
             //LA SUMA DE TODAS LAS CAJAS Y BOLSAS
-            Log.e("TAG", "TOTAL "+(count_total)+" DESPACHADOS " +(count_despacho));
-            if(count_total  == count_despacho){
+            //Log.e("TAG", "TOTAL "+(count_total)+" DESPACHADOS " +(count_despacho));
+            //sessionDatos.setIdViaje("22", "0");
+            if(count_total > 0 && count_total  == count_despacho && sessionDatos.getRecord().get(SessionKeys.estadoViaje).equals("0")){
                 alertDialog.setCanceledOnTouchOutside(false);
                 alertDialog.setTitle("Iniciar Viaje");
                 alertDialog.setMessage("¿Desea iniciar viaje?");
@@ -242,16 +298,32 @@ public class MenuFragment extends Fragment implements LoginDialog.OnInputSelecte
                         newFragment.show(getFragmentManager(), "Dialog");
                     }
                 });
-                alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Volver", new DialogInterface.OnClickListener() {
+                alertDialog.show();
+                //
+            }else{
+                if(!sessionDatos.getRecord().get(SessionKeys.estadoViaje).equals("0")){
+                    alertDialog.setCanceledOnTouchOutside(false);
+                    alertDialog.setTitle("Viaje Iniciado");
+                    alertDialog.setMessage("El viaje ya esta iniciado.");
+                    alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Aceptar", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            alertDialog.dismiss();
+                        }
+                    });
+                    alertDialog.show();
+                    return;
+                }
+                alertDialog.setCanceledOnTouchOutside(false);
+                alertDialog.setTitle("No puedes iniciar el viaje");
+                alertDialog.setMessage("Faltan items por cargar e iniciar el viaje..");
+                alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Aceptar", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         alertDialog.dismiss();
                     }
                 });
                 alertDialog.show();
-                //
-            }else{
-                Toast.makeText(getContext(), "Faltan items para iniciar viaje", Toast.LENGTH_LONG).show();
             }
         }
     };
@@ -259,67 +331,200 @@ public class MenuFragment extends Fragment implements LoginDialog.OnInputSelecte
     private View.OnClickListener onClickRevisar = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-            ((AppCompatActivity) getActivity()).getSupportActionBar().hide();
-            RevisarFragment newFragment = new RevisarFragment();
-            FragmentTransaction fm = getActivity().getSupportFragmentManager().beginTransaction();
-            fm.replace(R.id.main_activity_frame, newFragment);
-            fm.commit();
+            try {
+                listViajes = viajesData.getDespachos();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            if(listViajes.size() > 0) {
+                ((AppCompatActivity) getActivity()).getSupportActionBar().hide();
+                PedidosFragment newFragment = new PedidosFragment();
+                Bundle bundle = new Bundle();
+                bundle.putString("OPT", "1");
+                newFragment.setArguments(bundle);
+                FragmentTransaction fm = getActivity().getSupportFragmentManager().beginTransaction();
+                fm.replace(R.id.main_activity_frame, newFragment);
+                fm.commit();
+            }else {
+                alertDialog.setCanceledOnTouchOutside(false);
+                alertDialog.setTitle("Sin pedidos");
+                alertDialog.setMessage("No hay pedidos cargados previamente..");
+                alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Aceptar", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        alertDialog.dismiss();
+                    }
+                });
+                alertDialog.show();
+            }
         }
     };
 
     private View.OnClickListener onClickCargarFurgon = new View.OnClickListener() {
         @Override
-        public void onClick(View view) {
-             EscanearDialog newFragment = new EscanearDialog();
-             newFragment.setTargetFragment(MenuFragment.this, 1);
-             newFragment.show(getFragmentManager(), "EscanearDialog");
+        public void onClick(View view){
+            if(listViajes.size() > 0){
+                EscanearDialog newFragment = new EscanearDialog();
+                Bundle bundle = new Bundle();
+                bundle.putString("OPT", "1");
+                newFragment.setArguments(bundle);
+                newFragment.setTargetFragment(MenuFragment.this, 1);
+                newFragment.show(getFragmentManager(), "Dialog");
+            }else {
+                alertDialog.setCanceledOnTouchOutside(false);
+                alertDialog.setTitle("Sin pedidos");
+                alertDialog.setMessage("No hay pedidos cargados previamente..");
+                alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Aceptar", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        alertDialog.dismiss();
+                    }
+                });
+                alertDialog.show();
+            }
         }
     };
 
     @Override
     public void rspta(boolean value, String opt, int numviaje) {
+        /***/
+        try {
+            listViajes = viajesData.getDespachos();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         //OPT:2=INICIA VIAJE,3=FIN VIAJE
-        //ESTADO:5=INICIA,9=FIN
+        //ESTADO:5=INICIA,9 =FIN
         /***/
         if(opt.equals("1")){
-            sessionDatos.setIdViaje(String.valueOf(numviaje), "0");
+            //sessionDatos.setIdViaje(String.valueOf(numviaje), "0");
             //
         } else if(opt.equals("2")){
-            try {
-                viajesData.updateEstadoViaje(String.valueOf(numviaje), "5");
-                putEstadoViaje(numviaje, 5);
-                sessionDatos.setIdViaje(String.valueOf(numviaje), "5");
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            //
+            progressDialog.setMessage("");
+            String nviaje = sessionDatos.getRecord().get(SessionKeys.idViaje);
+            String rut = sessionDatos.getRecord().get(SessionKeys.rutUsuario);
+            putEstadoViaje(Integer.parseInt(nviaje), 5, Integer.parseInt(rut));
+            sessionDatos.setIdViaje(nviaje, "5");
         } else if(opt.equals("3")){
-            try {
-                viajesData.updateEstadoViaje(String.valueOf(numviaje), "9");
-                putEstadoViaje(numviaje, 9);
-                sessionDatos.setIdViaje(String.valueOf(numviaje), "9");
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            progressDialog.setMessage("");
+            String nviaje = sessionDatos.getRecord().get(SessionKeys.idViaje);
+            String rut = sessionDatos.getRecord().get(SessionKeys.rutUsuario);
+            putEstadoViaje(Integer.parseInt(nviaje), 9,  Integer.parseInt(rut));
+            sessionDatos.setIdViaje(nviaje, "9");
         }
+        progressDialog.show();
     }
 
-    //
-    void putEstadoViaje(int numviaje, int estado){
-        Call<Viajes> call = ApiConf.getData().putViajes(numviaje, estado);
+    void updatePedidoEntregado(int idpedido, String fecha, String hora, String obs){
+        Map<String, Object> jsonArrayMap = new ArrayMap<>();
+        jsonArrayMap.put("Registro", idpedido);
+        jsonArrayMap.put("Fechaentrega", fecha);
+        jsonArrayMap.put("Horaentrega", hora);
+        jsonArrayMap.put("Obsdespacho", obs);
+        RequestBody body = RequestBody.create(MediaType
+                .parse("application/json; charset=utf-8"), (new JSONObject(jsonArrayMap)).toString());
+
+        Call<Fotos> call = ApiConf.getData().updatePedidoEntregado(body);
+        call.enqueue(new Callback<Fotos>() {
+            @Override
+            public void onResponse(Call<Fotos> call, Response<Fotos> response) {
+                if(response.isSuccessful()){
+
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Fotos> call, Throwable t) {
+                Log.e("failureInst==>", t.toString());
+            }
+        });
+    }
+
+    void postFotosDespacho(int idpedido, byte[] foto){
+        Map<String, Object> jsonArrayMap = new ArrayMap<>();
+        jsonArrayMap.put("Pedidosregistro", idpedido);
+        jsonArrayMap.put("Foto", Base64.encodeToString(foto, Base64.DEFAULT));
+        RequestBody body = RequestBody.create(MediaType
+                .parse("application/json; charset=utf-8"), (new JSONObject(jsonArrayMap)).toString());
+
+        Call<Fotos> call = ApiConf.getData().postFotosDespacho(body);
+        call.enqueue(new Callback<Fotos>() {
+            @Override
+            public void onResponse(Call<Fotos> call, Response<Fotos> response) {
+                if(response.isSuccessful()){
+
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Fotos> call, Throwable t) {
+                Log.e("failureInst==>", t.toString());
+            }
+        });
+    }
+
+    void putEstadoViaje(int numviaje, int estado, int rut){
+        Call<Viajes> call = ApiConf.getData().putViajes(numviaje, estado, rut);
         call.enqueue(new Callback<Viajes>() {
             @Override
             public void onResponse(Call<Viajes> call, Response<Viajes> response) {
                 if(response.isSuccessful()){
+                    progressDialog.dismiss();
                     if(estado == 9){
                         try {
+                            viajesData.updateEstadoViaje(String.valueOf(numviaje), "9");
                             /***/
+                            for(Fotos fotos: viajesData.getAllFotos()){
+                                postFotosDespacho(fotos.getIdPedido(), tools.decodeByte(fotos.getRutaUrl()));
+                            }
+                            //
+                            for(Viajes viajes: listViajes){
+                                List<Viajesd> viajesd = viajes.getViajesd();
+                                for(Viajesd viajesd1: viajesd){
+                                    Pedidos pedidos = viajesd1.getPedidos();
+                                    updatePedidoEntregado(pedidos.getRegistro(),
+                                            pedidos.getFechaentrega(),
+                                            pedidos.getHoraentrega(),
+                                            pedidos.getObsdespacho());
+                                }
+                            }
+                            File folder= new File(getContext().getFilesDir() + "/fotos");
+                            if(!folder.exists())
+                                folder.delete();
                             viajesData.borrarPedidos();
-                            Toast.makeText(getContext(),"Viaje cerrado", Toast.LENGTH_LONG).show();
+                            sessionDatos.Logout();
+                            //
+                            alertDialog.setCanceledOnTouchOutside(false);
+                            alertDialog.setTitle("Estado viaje");
+                            alertDialog.setMessage("Viaje Cerrado..");
+                            alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Aceptar", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    alertDialog.dismiss();
+                                }
+                            });
+                            alertDialog.show();
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
                     }else{
-                        Toast.makeText(getContext(),"Viaje Actualizado..", Toast.LENGTH_LONG).show();
+                        /***/
+                        try {
+                            viajesData.updateEstadoViaje(String.valueOf(numviaje), "5");
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        alertDialog.setCanceledOnTouchOutside(false);
+                        alertDialog.setTitle("Estado viaje");
+                        alertDialog.setMessage("Viaje Actualizado..");
+                        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Aceptar", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                alertDialog.dismiss();
+                            }
+                        });
+                        alertDialog.show();
                     }
                 }
             }

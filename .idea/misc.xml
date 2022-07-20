@@ -7,13 +7,23 @@
         <entry key="..\:/Users/Ignacio/Documents/Proyecto Opencode/webbox/webboxdespacho/app/src/main/res/drawable/ic_back_white_keyboard_arrow_left_24.xml" value="0.126" />
         <entry key="..\:/Users/Ignacio/Documents/Proyecto Opencode/webbox/webboxdespacho/app/src/main/res/drawable/ic_baseline_cargar_24.xml" value="0.1745" />
         <entry key="..\:/Users/Ignacio/Documents/Proyecto Opencode/webbox/webboxdespacho/app/src/main/res/drawable/ic_baseline_document_scanner_24.xml" value="0.187" />
+        <entry key="..\:/Users/Ignacio/Documents/Proyecto Opencode/webbox/webboxdespacho/app/src/main/res/drawable/ic_baseline_pageview_24.xml" value="0.1055" />
+        <entry key="..\:/Users/Ignacio/Documents/Proyecto Opencode/webbox/webboxdespacho/app/src/main/res/drawable/ic_baseline_play_circle_24.xml" value="0.1055" />
+        <entry key="..\:/Users/Ignacio/Documents/Proyecto Opencode/webbox/webboxdespacho/app/src/main/res/drawable/ic_baseline_present_to_all_24.xml" value="0.1055" />
+        <entry key="..\:/Users/Ignacio/Documents/Proyecto Opencode/webbox/webboxdespacho/app/src/main/res/drawable/ic_white_document_scanner_24.xml" value="0.1055" />
+        <entry key="..\:/Users/Ignacio/Documents/Proyecto Opencode/webbox/webboxdespacho/app/src/main/res/drawable/ic_white_photo_camera_44.xml" value="0.112" />
+        <entry key="..\:/Users/Ignacio/Documents/Proyecto Opencode/webbox/webboxdespacho/app/src/main/res/drawable/round_button.xml" value="0.112" />
+        <entry key="..\:/Users/Ignacio/Documents/Proyecto Opencode/webbox/webboxdespacho/app/src/main/res/layout/activity_camera_xactivity.xml" value="0.20416666666666666" />
         <entry key="..\:/Users/Ignacio/Documents/Proyecto Opencode/webbox/webboxdespacho/app/src/main/res/layout/activity_main.xml" value="0.20416666666666666" />
+        <entry key="..\:/Users/Ignacio/Documents/Proyecto Opencode/webbox/webboxdespacho/app/src/main/res/layout/fragment_blank.xml" value="0.20416666666666666" />
         <entry key="..\:/Users/Ignacio/Documents/Proyecto Opencode/webbox/webboxdespacho/app/src/main/res/layout/fragment_escanear_dialog.xml" value="0.33" />
         <entry key="..\:/Users/Ignacio/Documents/Proyecto Opencode/webbox/webboxdespacho/app/src/main/res/layout/fragment_login.xml" value="0.20416666666666666" />
         <entry key="..\:/Users/Ignacio/Documents/Proyecto Opencode/webbox/webboxdespacho/app/src/main/res/layout/fragment_login_dialog.xml" value="0.20416666666666666" />
         <entry key="..\:/Users/Ignacio/Documents/Proyecto Opencode/webbox/webboxdespacho/app/src/main/res/layout/fragment_main.xml" value="0.33" />
         <entry key="..\:/Users/Ignacio/Documents/Proyecto Opencode/webbox/webboxdespacho/app/src/main/res/layout/fragment_menu.xml" value="0.20416666666666666" />
+        <entry key="..\:/Users/Ignacio/Documents/Proyecto Opencode/webbox/webboxdespacho/app/src/main/res/layout/fragment_observacion.xml" value="0.20416666666666666" />
         <entry key="..\:/Users/Ignacio/Documents/Proyecto Opencode/webbox/webboxdespacho/app/src/main/res/layout/fragment_revisar.xml" value="0.20416666666666666" />
+        <entry key="..\:/Users/Ignacio/Documents/Proyecto Opencode/webbox/webboxdespacho/app/src/main/res/layout/fragment_ver_foto.xml" value="0.20416666666666666" />
         <entry key="..\:/Users/Ignacio/Documents/Proyecto Opencode/webbox/webboxdespacho/app/src/main/res/layout/fragment_ver_pedido_dialog.xml" value="0.20416666666666666" />
         <entry key="..\:/Users/Ignacio/Documents/Proyecto Opencode/webbox/webboxdespacho/app/src/main/res/layout/pedido_rv_card.xml" value="0.20416666666666666" />
         <entry key="..\:/Users/Ignacio/Documents/Proyecto Opencode/webbox/webboxdespacho/app/src/main/res/menu/activity_main_drawer.xml" value="0.33" />

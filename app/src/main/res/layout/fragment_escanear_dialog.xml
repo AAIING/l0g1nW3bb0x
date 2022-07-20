@@ -44,6 +44,7 @@
                 android:layout_alignParentRight="true"
                 android:layout_marginTop="20dp"
                 android:hint="CAJAS: X DE Y"
+                android:textColor="?android:textColorPrimary"
                 android:textStyle="bold"></TextView>
 
             <TextView
@@ -53,6 +54,7 @@
                 android:layout_alignParentLeft="true"
                 android:layout_marginTop="20dp"
                 android:hint="BOLSAS: X DE Y"
+                android:textColor="?android:textColorPrimary"
                 android:textStyle="bold"></TextView>
 
         </LinearLayout>

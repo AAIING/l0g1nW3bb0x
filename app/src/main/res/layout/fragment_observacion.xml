@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".fragments.dialogs.ObservacionDialog">
+
+    <LinearLayout
+        android:layout_weight="1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingTop="20dp">
+
+        <TextView
+            android:id="@+id/view_num_pedido_observacion"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="N° Pedido: 0000"
+            android:layout_marginStart="10dp"
+            android:textColor="?android:textColorPrimary"
+            android:textSize="20dp"
+            android:textStyle="bold"></TextView>
+
+        <androidx.cardview.widget.CardView
+            android:layout_marginTop="20dp"
+            android:layout_below="@+id/linear_title_observacion"
+            android:id="@+id/card_comment_box"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <EditText
+                android:id="@+id/edit_observacion_item"
+                android:hint="Escriba aqui su observación o comentario.."
+                android:padding="10dp"
+                android:layout_width="fill_parent"
+                android:layout_height="150dp">
+            </EditText>
+        </androidx.cardview.widget.CardView>
+        <LinearLayout
+            android:gravity="right"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <Button
+                android:id="@+id/btn_aceptar_observacion"
+                android:text="aceptar"
+                android:layout_marginEnd="20dp"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent">
+            </Button>
+        </LinearLayout>
+    </LinearLayout>
+</FrameLayout>

@@ -16,7 +16,7 @@
                 android:id="@+id/view_numero_pedido"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
+                android:layout_weight="1.5"
                 android:gravity="left"
                 android:padding="3dp"
                 android:text="0000"
@@ -48,7 +48,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:gravity="center_vertical"
-                android:padding="3dp"
+                android:padding="4dp"
                 android:textColor="?android:textColorPrimary" />
 
             <TextView
@@ -57,13 +57,22 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:gravity="center"
+                android:padding="4dp"
+                android:textColor="?android:textColorPrimary" />
+
+            <TextView
+                android:id="@+id/view_check_pedido_observaciones"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
                 android:padding="3dp"
+                android:drawableStart="@drawable/ic_gray_find_in_page_24"
                 android:textColor="?android:textColorPrimary" />
 
         </TableRow>
         <!--End Table Head -->
 
     </TableLayout>
-
 
 </RelativeLayout>

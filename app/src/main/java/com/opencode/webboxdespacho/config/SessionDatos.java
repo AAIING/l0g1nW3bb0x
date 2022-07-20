@@ -22,7 +22,20 @@ public class SessionDatos {
         HashMap<SessionKeys, String> map = new HashMap<>();
         map.put(SessionKeys.idViaje, preferences.getString(SessionKeys.idViaje.name(), "0"));
         map.put(SessionKeys.estadoViaje, preferences.getString(SessionKeys.estadoViaje.name(), "0"));
+        map.put(SessionKeys.nombreUsuario, preferences.getString(SessionKeys.nombreUsuario.name(), ""));
+        map.put(SessionKeys.rutUsuario, preferences.getString(SessionKeys.rutUsuario.name(), "0"));
         return  map;
+    }
+
+    public void setNombreUsuario(String usr){
+        editor.putString(SessionKeys.nombreUsuario.name(), usr);
+        editor.commit();
+    }
+
+
+    public void setRutChofer(String rut){
+        editor.putString(SessionKeys.rutUsuario.name(), rut);
+        editor.commit();
     }
 
     public void setIdViaje(String id, String estado){

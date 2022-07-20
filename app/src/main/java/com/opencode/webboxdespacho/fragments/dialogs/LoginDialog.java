@@ -21,6 +21,8 @@ import com.opencode.webboxdespacho.R;
 import com.opencode.webboxdespacho.config.ApiConf;
 import com.opencode.webboxdespacho.config.SessionDatos;
 import com.opencode.webboxdespacho.config.SessionKeys;
+import com.opencode.webboxdespacho.models.Itemsid;
+import com.opencode.webboxdespacho.models.Pedidos;
 import com.opencode.webboxdespacho.models.Viajes;
 import com.opencode.webboxdespacho.models.Viajesd;
 import com.opencode.webboxdespacho.models.Login;
@@ -104,6 +106,7 @@ public class LoginDialog extends DialogFragment {
     private SessionDatos sessionDatos;
     private ProgressDialog progressDialog;
     private String opt="1";
+    private int nroviaje =0;
     private List<Viajes> listViajes = new ArrayList<>();
 
     @Override
@@ -133,6 +136,11 @@ public class LoginDialog extends DialogFragment {
         btnCerrarLogin.setOnClickListener(onClickCerrarLogin);
         if(getArguments() != null){
             opt = getArguments().getString("OPT");
+            if(opt.equals("2") || opt.equals("3")){
+                etUser.setEnabled(false);
+                String usr = sessionDatos.getRecord().get(SessionKeys.nombreUsuario);
+                etUser.setText(usr);
+            }
         }
         return view;
     }
@@ -149,45 +157,34 @@ public class LoginDialog extends DialogFragment {
         public void onClick(View v) {
             //
             if(opt.equals("1")) {
-                if (!isLogin) {
-                    String usuario = etUser.getText().toString();
-                    String contrasena = etPassword.getText().toString();
-                    if (!usuario.isEmpty() && !contrasena.isEmpty()) {
-                        progressDialog.show();
-                        progressDialog.setMessage("Comprobando usuario..");
-                        login(usuario, contrasena);
-                    } else {
-                        Toast.makeText(getContext(), "Faltan parametro(s)", Toast.LENGTH_SHORT).show();
-                    }
-
-                } else {
-                    String numviaje = etNumViaje.getText().toString();
-                    if (!numviaje.isEmpty()) {
-                        progressDialog.show();
-                        progressDialog.setMessage("Sincronizando datos..");
-                        cargarViaje(Integer.parseInt(numviaje));
-                    } else {
-                        Toast.makeText(getContext(), "Faltan parametro(s)", Toast.LENGTH_SHORT).show();
-                    }
-                }
                 //
-            }else if(opt.equals("2")){
                 String usuario = etUser.getText().toString();
                 String contrasena = etPassword.getText().toString();
                 if (!usuario.isEmpty() && !contrasena.isEmpty()) {
                     progressDialog.show();
-                    progressDialog.setMessage("Sincronizando..");
+                    progressDialog.setMessage("Comprobando usuario..");
                     login(usuario, contrasena);
                 } else {
                     Toast.makeText(getContext(), "Faltan parametro(s)", Toast.LENGTH_SHORT).show();
                 }
-                //
-            }else if(opt.equals("3")){
+
+            } else if(opt.equals("2")){
                 String usuario = etUser.getText().toString();
                 String contrasena = etPassword.getText().toString();
                 if (!usuario.isEmpty() && !contrasena.isEmpty()) {
                     progressDialog.show();
-                    progressDialog.setMessage("Sincronizando..");
+                    progressDialog.setMessage("Iniciando viaje..");
+                    login(usuario, contrasena);
+                } else {
+                    Toast.makeText(getContext(), "Faltan parametro(s)", Toast.LENGTH_SHORT).show();
+                }
+
+            } else if(opt.equals("3")){
+                String usuario = etUser.getText().toString();
+                String contrasena = etPassword.getText().toString();
+                if (!usuario.isEmpty() && !contrasena.isEmpty()) {
+                    progressDialog.show();
+                    progressDialog.setMessage("Comprobando usuario..");
                     login(usuario, contrasena);
                 } else {
                     Toast.makeText(getContext(), "Faltan parametro(s)", Toast.LENGTH_SHORT).show();
@@ -204,12 +201,28 @@ public class LoginDialog extends DialogFragment {
             public void onResponse(Call<Login> call, Response<Login> response) {
                 if(response.isSuccessful()){
                     Login login = response.body();
+                    //
+                    if(login.getChofer() == 0){
+                        alertDialog.setCanceledOnTouchOutside(false);
+                        alertDialog.setTitle("Alerta");
+                        alertDialog.setMessage("El usuario no es un conductor o chofer designado");
+                        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Aceptar", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                alertDialog.dismiss();
+                            }
+                        });
+                        alertDialog.show();
+                        progressDialog.dismiss();
+                        return;
+                    }
+                    progressDialog.dismiss();
                     isLogin = true;
                     if(opt.equals("1")) { //SINCRONIZAR DATOS
-                        btnLogin.setText("Cargar Viaje");
-                        etUser.setVisibility(View.GONE);
-                        etPassword.setVisibility(View.GONE);
-                        etNumViaje.setVisibility(View.VISIBLE);
+                        //CONSULTAR PRIORIDAD DE VIAJE O SI TIENE VIAJES DESIGNADOS
+                        cargarViaje(login.getRut());
+                        sessionDatos.setNombreUsuario(usr);
+                        dismiss();
                     }else if(opt.equals("2")){ //INICIAR VIAJE
                         dismiss();
                         String numviaje = sessionDatos.getRecord().get(SessionKeys.idViaje);
@@ -219,7 +232,7 @@ public class LoginDialog extends DialogFragment {
                         String numviaje = sessionDatos.getRecord().get(SessionKeys.idViaje);
                         mOnInputSelected.rspta(isLogin, opt, Integer.parseInt(numviaje));
                     }
-                    progressDialog.dismiss();
+
                 }else{
                     progressDialog.dismiss();
                     Toast.makeText(getContext(), "Error login..\ncompruebe usuario y/o contraseña", Toast.LENGTH_LONG).show();
@@ -234,17 +247,55 @@ public class LoginDialog extends DialogFragment {
         });
     }
 
-    void cargarViaje(int numviaje){
-        Call<List<Viajes>> call = ApiConf.getData().getViajes(numviaje);
+    void cargarViaje(int rutchofer){
+        progressDialog.setMessage("Verificando viajes..");
+        Call<List<Viajes>> call = ApiConf.getData().getViajes(rutchofer);
         call.enqueue(new Callback<List<Viajes>>() {
             @Override
             public void onResponse(Call<List<Viajes>> call, Response<List<Viajes>> response) {
                 if(response.isSuccessful()){
                     List<Viajes> respta = response.body();
                     try {
+                        //
+                        for(Viajes viajes: respta){
+                            nroviaje = viajes.getNroviaje();
+                            if(viajes.getViajesd() == null){
+                                alertDialog.setCanceledOnTouchOutside(false);
+                                alertDialog.setTitle("Viaje sin pedidos");
+                                alertDialog.setMessage("El viaje no contiene pedidos..");
+                                alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Aceptar", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        alertDialog.dismiss();
+                                    }
+                                });
+                                alertDialog.show();
+                                progressDialog.dismiss();
+                                return;
+                            }else {
+                                for (Viajesd viajesd : viajes.getViajesd()) {
+                                    Pedidos pedidos = viajesd.getPedidos();
+                                    if (pedidos.getItemsids() == null) {
+                                        alertDialog.setCanceledOnTouchOutside(false);
+                                        alertDialog.setTitle("Pedidos sin items");
+                                        alertDialog.setMessage("Los pedidos no contienen items..");
+                                        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Aceptar", new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                alertDialog.dismiss();
+                                            }
+                                        });
+                                        alertDialog.show();
+                                        progressDialog.dismiss();
+                                        return;
+                                    }
+                                }
+                            }
+                        }
+                        //
                         if(listViajes.size() > 0)
                         viajesData.borrarPedidos();
-
+                        /***/
                         viajesData.insertPedidos(respta);
                         alertDialog.setCanceledOnTouchOutside(false);
                         alertDialog.setTitle("Cargar Viaje");
@@ -253,21 +304,32 @@ public class LoginDialog extends DialogFragment {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 //
-                                mOnInputSelected.rspta(isLogin, opt, numviaje);
+                                sessionDatos.setIdViaje(String.valueOf(nroviaje), "0");
+                                sessionDatos.setRutChofer(String.valueOf(rutchofer));
+                                //mOnInputSelected.rspta(isLogin, opt, nroviaje);
                                 dismiss();
                                 alertDialog.dismiss();
                             }
                         });
                         alertDialog.show();
                         progressDialog.dismiss();
-
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-
                 }else{
                     progressDialog.dismiss();
-                    Toast.makeText(getContext(),"NUMERO DE VIAJE NO EXISTE", Toast.LENGTH_LONG).show();
+                    alertDialog.setCanceledOnTouchOutside(false);
+                    alertDialog.setTitle("Sin viajes");
+                    alertDialog.setMessage("No tiene viajes asignados actualmente..");
+                    alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Aceptar", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            //mOnInputSelected.rspta(isLogin, opt, nroviaje);
+                            dismiss();
+                            alertDialog.dismiss();
+                        }
+                    });
+                    alertDialog.show();
                 }
             }
             @Override

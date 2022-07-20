@@ -4,7 +4,8 @@
 
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera.any" />
 
     <!-- android:usesCleartextTraffic : PERMITIR POLITICA DE SEGURIDAD DE RED -->
 
@@ -17,6 +18,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Webboxdespacho">
+        <activity
+            android:name=".config.CameraXActivity"
+            android:exported="true" />
         <activity
             android:name=".MainActivity"
             android:exported="true">

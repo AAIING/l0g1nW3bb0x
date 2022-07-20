@@ -1,5 +1,9 @@
 package com.opencode.webboxdespacho.fragments.dialogs;
 
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 
@@ -8,6 +12,7 @@ import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 
 import android.os.Handler;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,13 +23,19 @@ import android.widget.Toast;
 import com.journeyapps.barcodescanner.ScanContract;
 import com.journeyapps.barcodescanner.ScanOptions;
 import com.opencode.webboxdespacho.R;
+import com.opencode.webboxdespacho.config.CameraXActivity;
 import com.opencode.webboxdespacho.config.Capture;
+import com.opencode.webboxdespacho.config.SessionKeys;
 import com.opencode.webboxdespacho.models.Itemsid;
 import com.opencode.webboxdespacho.models.Pedidos;
+import com.opencode.webboxdespacho.models.Viajes;
 import com.opencode.webboxdespacho.models.Viajesd;
 import com.opencode.webboxdespacho.sqlite.data.ViajesData;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -73,15 +84,37 @@ public class EscanearDialog extends DialogFragment {
         }
     }
 
-    private int countCaja =0, countBolsa =0;
+    public interface OnInputSelected {
+        void rsptaEscaner(boolean value);
+    }
+
+    public OnInputSelected mOnInputSelected;
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        try{
+            mOnInputSelected = (OnInputSelected) getTargetFragment();
+        }catch (ClassCastException e){
+            Log.e("Dialog", "onAttach: ClassCastException : " + e.getMessage() );
+        }
+    }
+
+    private int countCaja =0, countBolsa =0, cajaEntr=0, bolsaEntr=0, count_foto=0, countdown=0;
     private TextView viewBolsas, viewCajas, viewNumPedido, viewQrEscaneado;
     private Button btnEscan, btnClose;
     private ScanOptions options;
     private ViajesData viajesData;
     private List<Viajesd> listDespachosd;
+    private List<Pedidos> listPedidos  = new ArrayList<>();
     private String opt="1", numpedido="", nomcliente="";
     private Handler handler = new Handler();
     private Runnable runnable;
+    private boolean sacaFoto =false, verFoto =false, flag=false;
+    private AlertDialog alertDialog;
+    private Map<Integer, Integer> mapCajas = new HashMap<>();
+    private Map<Integer, Integer> mapBolsas = new HashMap<>();
+    private List<Viajes> listViajes = new ArrayList<>();
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -89,14 +122,9 @@ public class EscanearDialog extends DialogFragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_escanear_dialog, container, false);
         setCancelable(false);
+        alertDialog = new AlertDialog.Builder(getContext()).create();
         viajesData = new ViajesData(getContext());
         btnClose = view.findViewById(R.id.button_close_escan);
-        btnClose.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                dismiss();
-            }
-        });
         btnEscan = view.findViewById(R.id.button_escan);
         btnEscan.setOnClickListener(onClickEscanear);
         viewBolsas = view.findViewById(R.id.view_num_bolsas);
@@ -110,72 +138,245 @@ public class EscanearDialog extends DialogFragment {
                 numpedido = getArguments().getString("NUMPEDIDO");
                 nomcliente = getArguments().getString("NOMCLIENTE");
                 viewNumPedido.setText("N° Pedido: " + numpedido +"\n"+"\n"+"Cliente: "+nomcliente);
+                /***/
+                try {
+                        int count_foto = viajesData.getFotos(numpedido);
+                        Viajesd despd = viajesData.getDespachod(numpedido);
+                        Pedidos pedidos = despd.getPedidos();
+                        viewCajas.setText("CAJAS: " + despd.getCajasentregadas() + " DE " + pedidos.getCajas());
+                        viewBolsas.setText("BOLSAS: " + despd.getBolsasentregadas() + " DE " + pedidos.getBolsas());
+                        //
+                        if(count_foto > 0) {
+                            btnEscan.setText("COMPLETADO");
+                            btnEscan.setEnabled(false);
+                            btnEscan.setCompoundDrawablesWithIntrinsicBounds(null, null, null, null);
+                        }
+                        else
+                        {
+                            if (despd.getCajasentregadas() == pedidos.getCajas() && despd.getBolsasentregadas() == pedidos.getBolsas()) {
+                                sacaFoto = true;
+                                btnEscan.setText("TOMAR FOTO");
+                                btnEscan.setCompoundDrawablesWithIntrinsicBounds(null, null, null, null);
+                            }
+                        }
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+            } else if(opt.equals("1")) {
+                int count_total=0;
+                int count_despacho=0;
+                try {
+                    listViajes = viajesData.getDespachos();
+                    for(Viajes viajes: listViajes){
+                        List<Viajesd> viajesd = viajes.getViajesd();
+                        for(Viajesd viajesd1: viajesd){
+                            Pedidos pedidos = viajesd1.getPedidos();
+                            count_total += pedidos.getCajas() + pedidos.getBolsas();
+                            count_despacho += viajesd1.getCajascargadas() + viajesd1.getBolsascargadas();
+                        }
+                    }
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                /***/
+                if(count_total > 0 && count_total == count_despacho ) {
+                    viewQrEscaneado.setText("EL FURGÓN YA ESTA CARGADO");
+                    viewQrEscaneado.setTextColor(Color.RED);
+                    handler.removeCallbacks(runnable);
+                    flag=false;
+                    btnEscan.setText("COMPLETADO");
+                    btnEscan.setEnabled(false);
+                    btnEscan.setCompoundDrawablesWithIntrinsicBounds(null, null, null, null);
+                }
             }
         }
+        //
+        btnClose.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(opt.equals("2")) {
+                    //
+                    try {
+                        int count_foto = viajesData.getFotos(numpedido);
+                        Viajesd despd = viajesData.getDespachod(numpedido);
+                        Pedidos pedidos = despd.getPedidos();
+                        //
+                        if(count_foto > 0) {
+                            mOnInputSelected.rsptaEscaner(true);
+                            dismiss();
+                        }
+                        else if(despd.getCajasentregadas() != pedidos.getCajas())
+                        {
+                            dismiss();
+                        }
+                        else
+                        {
+                            alertDialog.setCanceledOnTouchOutside(false);
+                            alertDialog.setTitle("Alerta");
+                            alertDialog.setMessage("Debes sacar 1 foto minimo por pedido");
+                            alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Aceptar", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    alertDialog.dismiss();
+                                }
+                            });
+                            alertDialog.show();
+                        }
 
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                else
+                {
+                    dismiss();
+                    handler.removeCallbacks(runnable);
+                }
+            }
+        });
         return view;
     }
 
     private View.OnClickListener onClickEscanear = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-            options = new ScanOptions();
-            options.setDesiredBarcodeFormats(ScanOptions.QR_CODE);
-            options.setPrompt("");
-            options.setCameraId(0);  //Use a specific camera of the device
-            options.setBeepEnabled(true);
-            options.setBarcodeImageEnabled(true);
-            options.setCaptureActivity(Capture.class);
-            barcodeLauncher.launch(options);
+            //
+            if(sacaFoto){
+                Intent intent = new Intent(getActivity(), CameraXActivity.class);
+                intent.putExtra("NUMPEDIDO", numpedido);
+                startActivity(intent);
+                //
+            } else {
+
+                if(flag){
+                    handler.removeCallbacks(runnable);
+                    btnEscan.setText("REANUDAR");
+                    flag=false;
+                    return;
+                }
+
+                //countdown =4;
+                flag=true;
+                runnable = new Runnable() {
+                    @Override
+                    public void run() {
+                        handler.postDelayed(this, 1000);
+                        //
+                        if(countdown == 0) {
+                            options = new ScanOptions();
+                            options.setDesiredBarcodeFormats(ScanOptions.QR_CODE);
+                            options.setPrompt("");
+                            options.setCameraId(0);  //Use a specific camera of the device
+                            options.setBeepEnabled(true);
+                            options.setBarcodeImageEnabled(true);
+                            options.setCaptureActivity(Capture.class);
+                            barcodeLauncher.launch(options);
+                            //flag=false;
+                            //countdown =4;
+                        }
+
+                        if(countdown > 0) {
+                            btnEscan.setText("PAUSAR .." + countdown);
+                            countdown--;
+                        }
+                    }
+                };
+                handler.postDelayed(runnable, 0);
+
+            }
         }
     };
 
     private final ActivityResultLauncher<ScanOptions> barcodeLauncher = registerForActivityResult(new ScanContract(),
             result -> {
+                int count_total=0;
+                int count_despacho=0;
+                try {
+                    listViajes = viajesData.getDespachos();
+                    for(Viajes viajes: listViajes){
+                        List<Viajesd> viajesd = viajes.getViajesd();
+                        for(Viajesd viajesd1: viajesd){
+                            Pedidos pedidos = viajesd1.getPedidos();
+                            count_total += pedidos.getCajas() + pedidos.getBolsas();
+                            count_despacho += viajesd1.getCajascargadas() + viajesd1.getBolsascargadas();
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 //
+                flag =true;
+                countdown =4;
+                //btnEscan.setText("PAUSAR");
+                //btnEscan.setEnabled(false);
+                btnEscan.setCompoundDrawablesWithIntrinsicBounds(null, null, null, null);
                 if(result.getContents() != null) {
-                    //
                     String value = result.getContents();
                     if(opt.equals("1")) {
-                        /** PARA SUBIDA DE ITEMS AL FURGON*/
+                        /**PARA SUBIDA DE ITEMS AL FURGON*/
                         try {
                             Itemsid itemid = viajesData.getItem(value);
+
+                            /*
+                            if(itemid.getCodigo() == null){
+                                viewQrEscaneado.setText("EL QR NO CORRESPONDE A LA CARGA");
+                                viewQrEscaneado.setTextColor(Color.RED);
+                                handler.removeCall   backs(runnable);
+                                btnEscan.setText("Escanear");
+                                btnEscan.setEnabled(true);
+                                return;
+                            }
+*/
                             String tipoenv = itemid.getTipoitem();
                             Viajesd despd = viajesData.getDespachod(String.valueOf(itemid.getPedidosregistro()));
                             Pedidos pedidos = despd.getPedidos();
-                            //
-                            handler.removeCallbacks(runnable);
-                            runnable = new Runnable() {
-                                @Override
-                                public void run() {
-                                    handler.postDelayed(this, 1000);
-                                    //
-                                    if (pedidos.getCajas() == despd.getCajascargadas() && pedidos.getBolsas() == despd.getBolsascargadas()) {
-                                        viewNumPedido.setText("N° Pedido: " + itemid.getPedidosregistro());
-                                        viewQrEscaneado.setText("EL PEDIDO YA ESTA CARGADO");
-                                        viewQrEscaneado.setTextColor(Color.RED);
-                                        viewCajas.setText("CAJAS: " + despd.getCajascargadas() + " DE " + pedidos.getCajas());
-                                        viewBolsas.setText("BOLSAS: " + despd.getBolsascargadas() + " DE " + pedidos.getBolsas());
-                                        return;
-                                    }
-                                }
-                            };
-                            handler.postDelayed(runnable, 0);
-
-                            if (itemid.getEscaneado() > 0) {
+                            if(despd.getCajascargadas() > 0){
+                                mapCajas.put(itemid.getPedidosregistro(), despd.getCajascargadas());
+                            }
+                            if(despd.getBolsascargadas() > 0){
+                                mapBolsas.put(itemid.getPedidosregistro(), despd.getBolsascargadas());
+                            }
+                            if(count_total > 0 && count_total == count_despacho ) {
+                                viewQrEscaneado.setText("EL FURGÓN YA ESTA CARGADO");
+                                viewQrEscaneado.setTextColor(Color.RED);
+                                handler.removeCallbacks(runnable);
+                                flag=false;
+                                btnEscan.setText("COMPLETADO");
+                                btnEscan.setEnabled(false);
+                                btnEscan.setCompoundDrawablesWithIntrinsicBounds(null, null, null, null);
+                                return;
+                            }
+                            if(pedidos.getCajas() == despd.getCajascargadas() && pedidos.getBolsas() == despd.getBolsascargadas()) {
+                                viewNumPedido.setText("N° Pedido: " + itemid.getPedidosregistro());
+                                viewQrEscaneado.setText("EL PEDIDO YA ESTA CARGADO");
+                                viewQrEscaneado.setTextColor(Color.GREEN);
+                                viewCajas.setText("CAJAS: " + despd.getCajascargadas() + " DE " + pedidos.getCajas());
+                                viewBolsas.setText("BOLSAS: " + despd.getBolsascargadas() + " DE " + pedidos.getBolsas());
+                                return;
+                            }
+                            if(itemid.getEscaneado() > 0) {
                                 viewNumPedido.setText("N° Pedido: " + itemid.getPedidosregistro());
                                 viewQrEscaneado.setText("QR REPETIDO");
                                 viewQrEscaneado.setTextColor(Color.RED);
                                 viewCajas.setText("CAJAS: " + despd.getCajascargadas() + " DE " + pedidos.getCajas());
                                 viewBolsas.setText("BOLSAS: " + despd.getBolsascargadas() + " DE " + pedidos.getBolsas());
                                 return;
-
                             } else {
                                 /** ESCANEADO IGUAL A 0*/
-                                if (tipoenv.equals("CAJA")) {
+                                int countCaja=0;
+                                int countBolsa=0;
+                                if(tipoenv.equals("CAJA")) {
                                     //
-                                    if (pedidos.getCajas() != countCaja)
-                                        if(pedidos.getCajas() > 0)
+                                    if(mapCajas.containsKey(itemid.getPedidosregistro()))
+                                        countCaja =mapCajas.get(itemid.getPedidosregistro());
+
+                                    if(mapBolsas.containsKey(itemid.getPedidosregistro()))
+                                        countBolsa =mapBolsas.get(itemid.getPedidosregistro());
+
+                                    if(pedidos.getCajas() != countCaja) {
                                         countCaja++;
                                         viewCajas.setText("CAJAS: " + countCaja + " DE " + pedidos.getCajas());
                                         viewBolsas.setText("BOLSAS: " + countBolsa + " DE " + pedidos.getBolsas());
@@ -183,18 +384,38 @@ public class EscanearDialog extends DialogFragment {
                                         viewQrEscaneado.setTextColor(Color.GREEN);
                                         viajesData.updateCajaBolsaCount(opt, String.valueOf(itemid.getPedidosregistro()), "" + countBolsa, "" + countCaja);
                                         viajesData.updateItemEscaneado(value, opt);
+                                        //
+                                        mapCajas.put(itemid.getPedidosregistro(), countCaja);
+                                    }
 
-                                } else if (tipoenv.equals("BOLSA")) {
+                                } else if(tipoenv.equals("BOLSA")) {
                                     //
-                                    if (pedidos.getBolsas() != countBolsa && pedidos.getBolsas() != despd.getBolsascargadas()) {
+                                    if(despd.getCajascargadas() > 0){
+                                        mapCajas.put(itemid.getPedidosregistro(), despd.getCajascargadas());
+                                    }
+                                    if(despd.getBolsascargadas() > 0){
+                                        mapBolsas.put(itemid.getPedidosregistro(), despd.getBolsascargadas());
+                                    }
+
+                                    if(pedidos.getBolsas() != countBolsa && pedidos.getBolsas() != despd.getBolsascargadas()) {
+                                        //
+                                        if(mapCajas.containsKey(itemid.getPedidosregistro()))
+                                            countCaja = mapCajas.get(itemid.getPedidosregistro());
+
+                                        if(mapBolsas.containsKey(itemid.getPedidosregistro()) )
+                                            countBolsa = mapBolsas.get(itemid.getPedidosregistro());
+
                                         if(pedidos.getBolsas() > 0)
-                                        countBolsa++;
+                                            countBolsa++;
+
                                         viewCajas.setText("CAJAS: " + countCaja + " DE " + pedidos.getCajas());
                                         viewBolsas.setText("BOLSAS: " + countBolsa + " DE " + pedidos.getBolsas());
                                         viewQrEscaneado.setText("QR ACEPTADO");
                                         viewQrEscaneado.setTextColor(Color.GREEN);
                                         viajesData.updateCajaBolsaCount(opt, String.valueOf(itemid.getPedidosregistro()), "" + countBolsa, "" + countCaja);
                                         viajesData.updateItemEscaneado(value, opt);
+                                        //
+                                        mapBolsas.put(itemid.getPedidosregistro(), countBolsa);
 
                                     } else {
                                         if (pedidos.getBolsas() == despd.getBolsascargadas())
@@ -206,78 +427,85 @@ public class EscanearDialog extends DialogFragment {
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
-
-                    }else if(opt.equals("2")){
+                        /***/
+                    } else if(opt.equals("2")){
                         /** PARA ENTREGA DE ITEMS A CLIENTE*/
                         try {
                             Itemsid itemid = viajesData.getItem(value);
+/*
+                            if(itemid.getCodigo() == null){
+                                viewQrEscaneado.setText("EL QR NO CORRESPONDE A LA CARGA");
+                                viewQrEscaneado.setTextColor(Color.RED);
+                                handler.removeCallbacks(runnable);
+                                btnEscan.setText("Escanear");
+                                btnEscan.setEnabled(true);
+                                return;
+                            }
+*/
                             String tipoenv = itemid.getTipoitem();
                             Viajesd despd = viajesData.getDespachod(String.valueOf(itemid.getPedidosregistro()));
                             Pedidos pedidos = despd.getPedidos();
 
+                            if(pedidos.getCajas() == despd.getCajasentregadas() && pedidos.getBolsas() == despd.getBolsasentregadas()) {
+                                handler.removeCallbacks(runnable);
+                                flag = false;
+                                btnEscan.setText("COMPLETADO");
+                                btnEscan.setEnabled(false);
+                                btnEscan.setCompoundDrawablesWithIntrinsicBounds(null, null, null, null);
+                            }
                             if(!String.valueOf(itemid.getPedidosregistro()).equals(numpedido)){
                                 viewQrEscaneado.setText("QR NO CORRESPONDE AL PEDIDO");
                                 viewQrEscaneado.setTextColor(Color.RED);
                                 return;
                             }
-
-                            handler.removeCallbacks(runnable);
-                            runnable = new Runnable() {
-                                @Override
-                                public void run() {
-                                    handler.postDelayed(this, 1000);
-                                    //
-                                    if (pedidos.getCajas() == despd.getCajasentregadas() && pedidos.getBolsas() == despd.getBolsasentregadas()) {
-                                        viewNumPedido.setText("N° Pedido: " + itemid.getPedidosregistro());
-                                        viewQrEscaneado.setText("EL PEDIDO YA ESTA CARGADO");
-                                        viewQrEscaneado.setTextColor(Color.RED);
-                                        viewCajas.setText("CAJAS: " + despd.getCajasentregadas() + " DE " + pedidos.getCajas());
-                                        viewBolsas.setText("BOLSAS: " + despd.getBolsasentregadas() + " DE " + pedidos.getBolsas());
-                                        return;
-                                    }
-                                }
-                            };
-                            handler.postDelayed(runnable, 0);
-
-                            if (itemid.getEscaneadoEntregado() > 0) {
-                                //Toast.makeText(getContext(), "QR YA LEIDO..", Toast.LENGTH_LONG).show();
+                            if (itemid.getEscaneadoEntregado() > 0){
                                 viewNumPedido.setText("N° Pedido: " + itemid.getPedidosregistro());
                                 viewQrEscaneado.setText("QR REPETIDO");
                                 viewQrEscaneado.setTextColor(Color.RED);
                                 viewCajas.setText("CAJAS: " + despd.getCajasentregadas() + " DE " + pedidos.getCajas());
                                 viewBolsas.setText("BOLSAS: " + despd.getBolsasentregadas() + " DE " + pedidos.getBolsas());
                                 return;
-
                             } else {
                                 /** ESCANEADO IGUAL A 0*/
-                                if (tipoenv.equals("CAJA")) {
-                                    //
-                                    if (pedidos.getCajas() != countCaja)
+                                if (tipoenv.equals("CAJA")){
+                                    if (pedidos.getCajas() != countCaja){
                                         countCaja++;
-
+                                    }
                                         viewCajas.setText("CAJAS: " + countCaja + " DE " + pedidos.getCajas());
                                         viewBolsas.setText("BOLSAS: " + countBolsa + " DE " + pedidos.getBolsas());
                                         viewQrEscaneado.setText("QR ACEPTADO");
                                         viewQrEscaneado.setTextColor(Color.GREEN);
                                         viajesData.updateCajaBolsaCount(opt, String.valueOf(itemid.getPedidosregistro()), "" + countBolsa, "" + countCaja);
                                         viajesData.updateItemEscaneado(value, opt);
-
-                                } else if(tipoenv.equals("BOLSA")) {
-                                    //
+                                        if (countCaja == pedidos.getCajas() && countBolsa == pedidos.getBolsas()){
+                                            sacaFoto = true;
+                                            btnEscan.setText("TOMAR FOTO");
+                                            btnEscan.setEnabled(true);
+                                            btnEscan.setCompoundDrawablesWithIntrinsicBounds(null, null, null, null);
+                                            handler.removeCallbacks(runnable);
+                                        }
+                                } else if(tipoenv.equals("BOLSA")){
                                     if (pedidos.getBolsas() != countBolsa && pedidos.getBolsas() != despd.getBolsasentregadas()) {
-                                        if(pedidos.getBolsas() > 0)
-                                        countBolsa++;
-
+                                        if(pedidos.getBolsas() > 0) {
+                                            countBolsa++;
+                                        }
                                         viewCajas.setText("CAJAS: " + countCaja + " DE " + pedidos.getCajas());
                                         viewBolsas.setText("BOLSAS: " + countBolsa + " DE " + pedidos.getBolsas());
                                         viewQrEscaneado.setText("QR ACEPTADO");
                                         viewQrEscaneado.setTextColor(Color.GREEN);
                                         viajesData.updateCajaBolsaCount(opt, String.valueOf(itemid.getPedidosregistro()), "" + countBolsa, "" + countCaja);
                                         viajesData.updateItemEscaneado(value, opt);
-
+                                        if (countCaja == pedidos.getCajas() && countBolsa == pedidos.getBolsas()){
+                                            sacaFoto = true;
+                                            btnEscan.setText("TOMAR FOTO");
+                                            btnEscan.setEnabled(true);
+                                            btnEscan.setCompoundDrawablesWithIntrinsicBounds(null, null, null, null);
+                                            handler.removeCallbacks(runnable);
+                                        }
                                     } else {
-                                        if (pedidos.getBolsas() == despd.getBolsasentregadas())
+                                        if (pedidos.getBolsas() == despd.getBolsasentregadas()){
                                             Toast.makeText(getContext(), "Bolsas Completas", Toast.LENGTH_LONG).show();
+                                        }
                                     }
                                 }
                             }

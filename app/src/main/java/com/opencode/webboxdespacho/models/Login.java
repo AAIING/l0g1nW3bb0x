@@ -34,6 +34,17 @@ public class Login {
     @SerializedName("HoraInicio")
     private String HoraInicio;
 
+    @SerializedName("Chofer")
+    private int chofer;
+
+    public int getChofer() {
+        return chofer;
+    }
+
+    public void setChofer(int chofer) {
+        this.chofer = chofer;
+    }
+
     public String getHoraInicio() {
         return HoraInicio;
     }

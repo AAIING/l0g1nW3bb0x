@@ -10,8 +10,11 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class ApiConf {
 
-    private static final String BASE_URL ="http://192.168.0.176:64078/";
-    //private static final String BASE_URL ="http://webbox_api.openpanel.cl/";
+    //OFICINA
+    //private static final String BASE_URL ="http://192.168.0.176:64078/";
+    //CASA
+    //private static final String BASE_URL ="http://192.168.1.83:64078//";
+    private static final String BASE_URL ="http://webbox_api.openpanel.cl/";
 
     public static CallInterface getData(){
         return getRetrofit(BASE_URL).create(CallInterface.class);

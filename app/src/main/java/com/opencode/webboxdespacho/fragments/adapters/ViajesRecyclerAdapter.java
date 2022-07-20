@@ -27,6 +27,7 @@ public class ViajesRecyclerAdapter extends RecyclerView.Adapter<ViajesRecyclerAd
     public interface OnClickListener {
         void onVerPedido(View view, int position);
         void onEntregarPedido(View view, int position);
+        void onObservacion(View view, int position);
     }
 
     public void setOnClickListener(OnClickListener onClickListener) {
@@ -48,13 +49,18 @@ public class ViajesRecyclerAdapter extends RecyclerView.Adapter<ViajesRecyclerAd
 
     @Override
     public void onBindViewHolder(@NonNull ViajesRecyclerAdapter.ViewHolder holder, @SuppressLint("RecyclerView") int position) {
-
         Viajesd item2 = listViajesd.get(holder.getAdapterPosition());
         Pedidos pedidos = item2.getPedidos();
-
         if(opt.equals("2")){
-            //holder.viewCheckCargadas.setVisibility(View.GONE);
-            Drawable drawable = context.getResources().getDrawable(R.drawable.ic_white_delivery_dining_24);
+            //
+            holder.viewObservaciones.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if(onClickListener == null) return;
+                    onClickListener.onObservacion(view, position);
+                }
+            });
+            Drawable drawable = context.getResources().getDrawable(R.drawable.ic_gray_present_to_all_24);
             holder.viewCheckCargadas.setCompoundDrawablesWithIntrinsicBounds(drawable, null, null, null);
             holder.viewCheckCargadas.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -63,7 +69,6 @@ public class ViajesRecyclerAdapter extends RecyclerView.Adapter<ViajesRecyclerAd
                     onClickListener.onEntregarPedido(view, position);
                 }
             });
-
             if(pedidos.getCajas() == item2.getCajasentregadas()){
                 Drawable drawable2 = context.getResources().getDrawable(R.drawable.ic_baseline_green_check_24);
                 holder.viewCheckEntregadas.setCompoundDrawablesWithIntrinsicBounds(drawable2, null, null, null);
@@ -71,16 +76,16 @@ public class ViajesRecyclerAdapter extends RecyclerView.Adapter<ViajesRecyclerAd
         }
         else if(opt.equals("1"))
         {
-            if(pedidos.getCajas() == item2.getCajascargadas()){
+            holder.viewObservaciones.setVisibility(View.GONE);
+            if(pedidos.getCajas() == item2.getCajascargadas() && pedidos.getBolsas() == item2.getBolsascargadas()){
                 Drawable drawable = context.getResources().getDrawable(R.drawable.ic_baseline_green_check_24);
                 holder.viewCheckCargadas.setCompoundDrawablesWithIntrinsicBounds(drawable, null, null, null);
             }
-            if(pedidos.getCajas() == item2.getCajasentregadas()){
+            if(pedidos.getCajas() == item2.getCajasentregadas() && pedidos.getBolsas() == item2.getBolsasentregadas()){
                 Drawable drawable = context.getResources().getDrawable(R.drawable.ic_baseline_green_check_24);
                 holder.viewCheckEntregadas.setCompoundDrawablesWithIntrinsicBounds(drawable, null, null, null);
             }
         }
-
         holder.viewVerPedido.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -88,23 +93,20 @@ public class ViajesRecyclerAdapter extends RecyclerView.Adapter<ViajesRecyclerAd
                 onClickListener.onVerPedido(view, position);
             }
         });
-
         holder.viewNumPedido.setText(String.valueOf(item2.getPedido()));
         holder.viewNombreCliente.setText(pedidos.getCliente());
     }
 
     @Override
     public int getItemCount() {
-        //return listViajes.size();
         return listViajesd.size();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
-
-        private TextView viewNumPedido, viewNombreCliente, viewVerPedido, viewCheckCargadas, viewCheckEntregadas;
-
+        private TextView viewNumPedido, viewNombreCliente, viewVerPedido, viewCheckCargadas, viewCheckEntregadas, viewObservaciones;
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
+            viewObservaciones = itemView.findViewById(R.id.view_check_pedido_observaciones);
             viewCheckCargadas = itemView.findViewById(R.id.view_check_pedido_cargado);
             viewCheckEntregadas = itemView.findViewById(R.id.view_check_pedido_entregado);
             viewNumPedido = itemView.findViewById(R.id.view_numero_pedido);

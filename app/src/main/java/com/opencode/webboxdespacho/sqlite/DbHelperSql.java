@@ -8,7 +8,7 @@ import androidx.annotation.Nullable;
 
 public class DbHelperSql extends SQLiteOpenHelper {
 
-    private static final String DATABASE_NAME = "DbViajes.db";
+    private static final String DATABASE_NAME = "DataViajes2.db";
     private static final int DATABASE_VERSION = 1;
 
     public DbHelperSql(@Nullable Context context) {
@@ -17,6 +17,7 @@ public class DbHelperSql extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
+        db.execSQL(CREAR_TABLA_FOTO);
         db.execSQL(CREAR_TABLA_VIAJES);
         db.execSQL(CREAR_TABLA_VIAJESD);
         db.execSQL(CREAR_TABLA_PEDIDOS);
@@ -25,8 +26,13 @@ public class DbHelperSql extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
-
     }
+
+    public static final String CREAR_TABLA_FOTO = " CREATE TABLE FOTOS( " +
+            "ID_FOTO             INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,  " +
+            "ID_PEDIDO           INTEGER NOT NULL, " +
+            "RUTA_URL            VARCHAR(200) NOT NULL " +
+            ");";
 
     public static final String CREAR_TABLA_ITEMSID = " CREATE TABLE ITEMSID( " +
             "ID_ITEMSID             INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,  " +
@@ -45,7 +51,10 @@ public class DbHelperSql extends SQLiteOpenHelper {
             "COMUNA             NVARCHAR(200) NOT NULL, " +
             "CONDOMINIO         NVARCHAR(200) NOT NULL, " +
             "CAJAS              INTEGER NOT NULL, " +
-            "BOLSAS             INTEGER NOT NULL " +
+            "BOLSAS             INTEGER NOT NULL, " +
+            "FECHAENTREGA       NVARCHAR(200) NOT NULL, " +
+            "HORAENTREGA        NVARCHAR(200) NOT NULL, " +
+            "OBSERVACION        TEXT NOT NULL " +
             ");";
 
     public static final String CREAR_TABLA_VIAJESD = " CREATE TABLE VIAJESD( " +
@@ -55,7 +64,8 @@ public class DbHelperSql extends SQLiteOpenHelper {
             "CAJASCARGADAS      INTEGER NOT NULL, " +
             "BOLSASCARGADAS     INTEGER NOT NULL, " +
             "CAJASENTREGADAS    INTEGER NOT NULL, " +
-            "BOLSASENTREGADAS   INTEGER NOT NULL " +
+            "BOLSASENTREGADAS   INTEGER NOT NULL, " +
+            "PRIORIDAD          INTEGER NOT NULL "+
             ");";
 
     public static final String CREAR_TABLA_VIAJES = " CREATE TABLE VIAJES( " +

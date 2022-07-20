@@ -52,6 +52,8 @@ public class Pedidos {
     @SerializedName("Obs")
     private String Obs ;
 
+    private String Obsdespacho ;
+
     @SerializedName("Ok")
     private short Ok ;
 
@@ -179,6 +181,33 @@ public class Pedidos {
     @Expose
     private List<Itemsid> itemsids;
 
+    private String Fechaentrega ;
+    private String Horaentrega ;
+
+    public String getObsdespacho() {
+        return Obsdespacho;
+    }
+
+    public void setObsdespacho(String obsdespacho) {
+        Obsdespacho = obsdespacho;
+    }
+
+    public String getFechaentrega() {
+        return Fechaentrega;
+    }
+
+    public void setFechaentrega(String fechaentrega) {
+        Fechaentrega = fechaentrega;
+    }
+
+    public String getHoraentrega() {
+        return Horaentrega;
+    }
+
+    public void setHoraentrega(String horaentrega) {
+        Horaentrega = horaentrega;
+    }
+
     public List<Itemsid> getItemsids() {
         return itemsids;
     }
@@ -187,19 +216,29 @@ public class Pedidos {
         this.itemsids = itemsids;
     }
 
-/*
-    @SerializedName("Clientes")
-    @Expose
-    private Clientes clientes;
+    private List<Fotos> fotos;
 
-    public Clientes getClientes() {
-        return clientes;
+    public List<Fotos> getFotos() {
+        return fotos;
     }
 
-    public void setClientes(Clientes clientes) {
-        this.clientes = clientes;
+    public void setFotos(List<Fotos> fotos) {
+        this.fotos = fotos;
     }
-*/
+
+    /*
+            @SerializedName("Clientes")
+            @Expose
+            private Clientes clientes;
+
+            public Clientes getClientes() {
+                return clientes;
+            }
+
+            public void setClientes(Clientes clientes) {
+                this.clientes = clientes;
+            }
+        */
     public int getRegistro() {
         return Registro;
     }
@@ -261,7 +300,11 @@ public class Pedidos {
     }
 
     public void setCondominioenvio(String condominioenvio) {
-        Condominioenvio = condominioenvio;
+        if(condominioenvio != null) {
+            Condominioenvio = condominioenvio;
+        }else{
+            Condominioenvio = "";
+        }
     }
 
     public short getVendedor() {

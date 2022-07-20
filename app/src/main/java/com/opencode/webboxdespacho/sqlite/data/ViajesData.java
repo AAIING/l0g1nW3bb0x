@@ -4,6 +4,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+import com.opencode.webboxdespacho.models.Fotos;
 import com.opencode.webboxdespacho.models.Itemsid;
 import com.opencode.webboxdespacho.models.Viajes;
 import com.opencode.webboxdespacho.models.Viajesd;
@@ -22,6 +23,181 @@ public class ViajesData {
 
     public ViajesData(Context context) {
         dbHelper = new DbHelperSql(context);
+    }
+
+    public void updatePrioridadPedido() throws Exception{
+        List<Viajesd> listViajesd = new ArrayList<>();
+        db = dbHelper.getWritableDatabase();
+        try {
+            String query2 = "SELECT * FROM VIAJESD WHERE PRIORIDAD > 0";
+            Cursor cursor = db.rawQuery(query2, null);
+            if(cursor.moveToFirst()) {
+                while (!cursor.isAfterLast()) {
+                    Viajesd viajesd = new Viajesd();
+                    viajesd.setPedido(cursor.getInt(cursor.getColumnIndexOrThrow("PEDIDO")));
+                    viajesd.setPrioridad(cursor.getInt(cursor.getColumnIndexOrThrow("PRIORIDAD")));
+                    listViajesd.add(viajesd);
+                    cursor.moveToNext();
+                }
+            }
+            cursor.close();
+            for(Viajesd item: listViajesd){
+                String query = "UPDATE VIAJESD SET PRIORIDAD =? WHERE PEDIDO =?";
+                db.execSQL(query, new Object[] {
+                        item.getPrioridad() - 1,
+                        item.getPedido()
+                });
+            }
+            dbHelper.close();
+        }catch (Exception e){
+            dbHelper.close();
+            throw new Exception(e.getMessage());
+        }
+    }
+
+    public int getPrioridadPedido() throws Exception{
+        db = dbHelper.getWritableDatabase();
+        int npedido=0;
+        try{
+            String query = "SELECT * FROM VIAJESD WHERE PRIORIDAD =1";
+            Cursor cursor = db.rawQuery(query, null);
+            if(cursor.moveToFirst()) {
+                while (!cursor.isAfterLast()) {
+                    npedido = cursor.getInt(cursor.getColumnIndexOrThrow("PEDIDO"));
+                    cursor.moveToNext();
+                }
+            }
+            cursor.close();
+            dbHelper.close();
+        } catch (Exception e){
+            dbHelper.close();
+            throw new Exception(e.getMessage());
+        }
+
+        return npedido;
+    }
+
+    public void updatePedidoEntrega(String idpedido, String fecha, String hora) throws Exception{
+        db = dbHelper.getWritableDatabase();
+        try {
+            String  query = "UPDATE PEDIDOS SET FECHAENTREGA=?, HORAENTREGA=? WHERE REGISTRO=?";
+            db.execSQL(query, new Object[] {
+                    fecha,
+                    hora,
+                    idpedido
+            });
+            dbHelper.close();
+        }catch (Exception e){
+            dbHelper.close();
+            throw new Exception(e.getMessage());
+        }
+    }
+
+    public List<Fotos> getAllFotos() throws Exception{
+        db = dbHelper.getWritableDatabase();
+        List<Fotos> fotosList = new ArrayList<>();
+        try{
+            String query = "SELECT * FROM FOTOS";
+            //String[] selectionsArgs = new String[]{pedido};
+            Cursor cursor = db.rawQuery(query, null);
+            if(cursor.moveToFirst()) {
+                while (!cursor.isAfterLast()) {
+                    //count++;
+                    Fotos fotos = new Fotos();
+                    fotos.setIdPedido(cursor.getInt(cursor.getColumnIndexOrThrow("ID_PEDIDO")));
+                    fotos.setRutaUrl(cursor.getString(cursor.getColumnIndexOrThrow("RUTA_URL")));
+                    fotosList.add(fotos);
+                    cursor.moveToNext();
+                }
+            }
+            cursor.close();
+            dbHelper.close();
+        } catch (Exception e){
+            dbHelper.close();
+            throw new Exception(e.getMessage());
+        }
+
+        return fotosList;
+    }
+
+    public int getFotos(String pedido) throws Exception{
+        db = dbHelper.getWritableDatabase();
+        int count = 0;
+        try{
+            String query = "SELECT * FROM FOTOS WHERE ID_PEDIDO=?";
+            String[] selectionsArgs = new String[]{pedido};
+            Cursor cursor = db.rawQuery(query, selectionsArgs);
+            if(cursor.moveToFirst()) {
+                while (!cursor.isAfterLast()) {
+                    count++;
+                    cursor.moveToNext();
+                }
+            }
+            cursor.close();
+            dbHelper.close();
+        } catch (Exception e){
+            dbHelper.close();
+            throw new Exception(e.getMessage());
+        }
+
+        return count;
+    }
+
+    public void insertRutaFoto(String idpedido, String url) throws Exception{
+        db = dbHelper.getWritableDatabase();
+        try {
+            String query3 = "INSERT INTO FOTOS ( " +
+                    "ID_PEDIDO, RUTA_URL)" +
+                    "VALUES (?, ?);";
+            db.execSQL(
+                    query3,
+                    new Object[]{
+                            idpedido,
+                            url
+                    });
+            dbHelper.close();
+        }catch (Exception e){
+            dbHelper.close();
+            throw new Exception(e.getMessage());
+        }
+    }
+
+    public Pedidos getPedidoObserv(String idpedido) throws Exception{
+        db = dbHelper.getWritableDatabase();
+        Pedidos pedidos = new Pedidos();
+        try{
+            String query = "SELECT * FROM PEDIDOS WHERE REGISTRO=?";
+            String[] selectionsArgs = new String[]{idpedido};
+            Cursor cursor = db.rawQuery(query, selectionsArgs);
+            if(cursor.moveToFirst()) {
+                while (!cursor.isAfterLast()) {
+                    pedidos.setObs(cursor.getString(cursor.getColumnIndexOrThrow("OBSERVACION")));
+                    cursor.moveToNext();
+                }
+            }
+            cursor.close();
+            dbHelper.close();
+        } catch (Exception e){
+            dbHelper.close();
+            throw new Exception(e.getMessage());
+        }
+
+        return pedidos;
+    }
+
+    public void updatePedidoObserv(String idpedido, String obs) throws Exception{
+        db = dbHelper.getWritableDatabase();
+        try {
+            String  query = "UPDATE PEDIDOS SET OBSERVACION=? WHERE REGISTRO=?";
+            db.execSQL(query, new Object[] {
+                    obs,
+                    idpedido
+            });
+            dbHelper.close();
+        }catch (Exception e){
+            dbHelper.close();
+            throw new Exception(e.getMessage());
+        }
     }
 
     public void updateItemEscaneado(String codigo, String opt) throws Exception{
@@ -151,6 +327,7 @@ public class ViajesData {
         List<Viajes> list = new ArrayList<Viajes>();
         List<Viajesd> listd = new ArrayList<Viajesd>();
         List<Itemsid> listitems = null;
+        List<Fotos> listfotos = null;
 
         Map<Integer, String> lookmap = new HashMap<>();
         Map<Integer, String> lookmap2 = new HashMap<>();
@@ -189,6 +366,7 @@ public class ViajesData {
                         item_viajesd.setBolsascargadas(cursor.getInt(cursor.getColumnIndexOrThrow("BOLSASCARGADAS")));
                         item_viajesd.setCajasentregadas(cursor.getInt(cursor.getColumnIndexOrThrow("CAJASENTREGADAS")));
                         item_viajesd.setBolsasentregadas(cursor.getInt(cursor.getColumnIndexOrThrow("BOLSASENTREGADAS")));
+                        item_viajesd.setPrioridad(cursor.getInt(cursor.getColumnIndexOrThrow("PRIORIDAD")));
 
                         pedidos.setRegistro(cursor.getInt(cursor.getColumnIndexOrThrow("PEDIDO")));
                         pedidos.setCliente(cursor.getString(cursor.getColumnIndexOrThrow("CLIENTE")));
@@ -197,6 +375,9 @@ public class ViajesData {
                         pedidos.setCondominioenvio(cursor.getString(cursor.getColumnIndexOrThrow("CONDOMINIO")));
                         pedidos.setCajas((short) cursor.getInt(cursor.getColumnIndexOrThrow("CAJAS")));
                         pedidos.setBolsas((short) cursor.getInt(cursor.getColumnIndexOrThrow("BOLSAS")));
+                        pedidos.setFechaentrega(cursor.getString(cursor.getColumnIndexOrThrow("FECHAENTREGA")));
+                        pedidos.setHoraentrega(cursor.getString(cursor.getColumnIndexOrThrow("HORAENTREGA")));
+                        pedidos.setObsdespacho(cursor.getString(cursor.getColumnIndexOrThrow("OBSERVACION")));
 
                         listitems = new ArrayList<Itemsid>();
                         pedidos.setItemsids(listitems);
@@ -216,9 +397,9 @@ public class ViajesData {
                 }
             }
             cursor.close();
-            dbHelper.close();
+            //dbHelper.close();
         } catch (Exception e){
-            dbHelper.close();
+            //dbHelper.close();
             throw new Exception(e.getMessage());
         }
         return list;
@@ -235,6 +416,8 @@ public class ViajesData {
             db.execSQL(query2,  new Object[]{});
             String query4 ="DELETE FROM ITEMSID";
             db.execSQL(query4,  new Object[]{});
+            String query5 ="DELETE FROM FOTOS";
+            db.execSQL(query5,  new Object[]{});
             dbHelper.close();
         }catch(Exception e){
             dbHelper.close();
@@ -263,8 +446,8 @@ public class ViajesData {
                 for(Viajesd item: item_viaje.getViajesd())
                 {
                     String query = "INSERT INTO VIAJESD ( " +
-                            "NROVIAJE, PEDIDO, CAJASCARGADAS, BOLSASCARGADAS, CAJASENTREGADAS, BOLSASENTREGADAS) " +
-                            "VALUES (?, ?, ?, ?, ?, ?);";
+                            "NROVIAJE, PEDIDO, CAJASCARGADAS, BOLSASCARGADAS, CAJASENTREGADAS, BOLSASENTREGADAS, PRIORIDAD) " +
+                            "VALUES (?, ?, ?, ?, ?, ?, ?);";
                     db.execSQL(
                             query,
                             new Object[]{
@@ -273,13 +456,15 @@ public class ViajesData {
                                     item.Cajascargadas,
                                     item.Bolsascargadas,
                                     item.Cajasentregadas,
-                                    item.Bolsasentregadas
+                                    item.Bolsasentregadas,
+                                    item.Prioridad
                             });
                     /***/
                     Pedidos pedidos = item.getPedidos();
+
                     String query2 = "INSERT INTO PEDIDOS ( " +
-                            "REGISTRO, CLIENTE, DIRECCIONENVIO, COMUNA, CONDOMINIO, CAJAS, BOLSAS) " +
-                            "VALUES (?, ?, ?, ?, ?, ?, ?);";
+                            "REGISTRO, CLIENTE, DIRECCIONENVIO, COMUNA, CONDOMINIO, CAJAS, BOLSAS, FECHAENTREGA, HORAENTREGA, OBSERVACION) " +
+                            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
                     db.execSQL(
                             query2,
                             new Object[]{
@@ -287,9 +472,12 @@ public class ViajesData {
                                     pedidos.getCliente(),
                                     pedidos.getDireccionenvio(),
                                     pedidos.getComunaenvio(),
-                                    pedidos.getCondominioenvio(),
+                                    pedidos.getCondominioenvio() == null ? "" : pedidos.getCondominioenvio(),
                                     pedidos.getCajas(),
-                                    pedidos.getBolsas()
+                                    pedidos.getBolsas(),
+                                    "0000-00-00",
+                                    "00:00:00",
+                                    ""
                             });
                     /***/
                     for(Itemsid itemsid: pedidos.getItemsids()){

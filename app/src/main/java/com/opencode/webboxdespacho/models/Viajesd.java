@@ -29,11 +29,22 @@ public class Viajesd {
     @SerializedName("Bolsasentregadas")
     public int Bolsasentregadas ;
 
+    @SerializedName("Prioridad")
+    public int Prioridad ;
+
     public int Iddespachod;
 
     @SerializedName("Pedidos")
     @Expose
     private Pedidos pedidos;
+
+    public int getPrioridad() {
+        return Prioridad;
+    }
+
+    public void setPrioridad(int prioridad) {
+        Prioridad = prioridad;
+    }
 
     public Pedidos getPedidos() {
         return pedidos;
